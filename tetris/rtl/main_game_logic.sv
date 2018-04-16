@@ -5,7 +5,7 @@ module main_game_logic
   input                                               clk_i,
   input                                               rst_i,
 
-  input          user_event_t                         user_event_i,
+  input                                        [2:0]  user_event_i,
   input                                               user_event_ready_i,
   output                                              user_event_rd_req_o,
 
@@ -13,13 +13,13 @@ module main_game_logic
 
 );
 
-// текущее состояние поля
+// game field state
 logic [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0]                           field;
 logic [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0] field_with_color;
 logic [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0] field_clean;
 logic [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0] field_shifted;
 
-// поле с текущим блоком
+// current block
 logic [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0] field_with_cur_block;
 
 logic [0:3][0:3]   cur_block_data;
@@ -164,7 +164,7 @@ always_comb
       begin
         if( user_event_ready_i )
           begin
-            case( user_event_i )
+            case( user_event_i[2:0] )
               EV_LEFT:   next_req_move[2:0] = MOVE_LEFT;
               EV_RIGHT:  next_req_move[2:0] = MOVE_RIGHT;
               EV_DOWN:   next_req_move[2:0] = MOVE_DOWN;
@@ -202,7 +202,7 @@ always_comb
         begin
           if( user_event_ready_i )
             begin
-              if( user_event_i == EV_NEW_GAME )
+              if( user_event_i[2:0] == EV_NEW_GAME )
                 next_state = NEW_GAME_S;
             end
         end
@@ -221,7 +221,7 @@ always_comb
         begin
           if( user_event_ready_i )
             begin
-              case( user_event_i )
+              case( user_event_i[2:0] )
                 EV_LEFT, EV_RIGHT, EV_DOWN, EV_ROTATE:
                   begin
                     next_state = CHECK_MOVE_S;
@@ -239,7 +239,7 @@ always_comb
           else
             if( sys_event )
               begin
-                // отсчитали нужное количество времени - сдвигаем вниз
+                // shifting down after waiting
                 next_state = CHECK_MOVE_S;
               end
         end
@@ -260,7 +260,7 @@ always_comb
                 if( |field[0][`FIELD_COL_CNT:1] )
                   next_state = GAME_OVER_S;
                 else
-                  // достигли дна, просто пересохраняем блок
+                  // bottom edge riached
                   next_state = APPEND_BLOCK_S;
               end
             else
@@ -276,8 +276,7 @@ always_comb
 
       CHECK_LINES_S:
         begin
-          // если хотя бы одна единица в full_row - остаемся
-          // в этом состоянии
+          // preserving state if at least one cell active
           if( !( |full_row ) )
             next_state = GEN_NEW_BLOCK_S;
         end
@@ -286,7 +285,7 @@ always_comb
         begin
           if( user_event_ready_i )
             begin
-              if( user_event_i == EV_NEW_GAME )
+              if( user_event_i[2:0] == EV_NEW_GAME )
                 next_state = NEW_GAME_S;
             end
         end
@@ -375,7 +374,7 @@ always_ff @( posedge clk_i or posedge rst_i )
   else
     check_lines_first_tick <= ( state == APPEND_BLOCK_S ) && ( next_state == CHECK_LINES_S );
 
-// сколько должно исчезнуть данных
+
 logic [2:0] disappear_lines_cnt;
 
 always_comb

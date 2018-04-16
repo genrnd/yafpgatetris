@@ -68,7 +68,7 @@ PS2_Controller ps2(
 );
 
 logic        user_event_rd_req_w;
-user_event_t user_event_w;
+logic [2:0]  user_event_w;
 logic        user_event_ready_w;
 
 user_input user_input(
@@ -82,7 +82,7 @@ user_input user_input(
   .main_logic_clk_i                       ( vga_clk                 ),
 
   .user_event_rd_req_i                    ( user_event_rd_req_w     ),
-  .user_event_o                           ( user_event_w            ),
+  .user_event_o                           ( user_event_w[2:0]       ),
   .user_event_ready_o                     ( user_event_ready_w      )
 
 );
@@ -94,7 +94,7 @@ main_game_logic main_logic(
   .clk_i                                  ( vga_clk             ),
   .rst_i                                  ( main_reset          ),
 
-  .user_event_i                           ( user_event_w        ),
+  .user_event_i                           ( user_event_w[2:0]   ),
   .user_event_ready_i                     ( user_event_ready_w  ),
   .user_event_rd_req_o                    ( user_event_rd_req_w ),
 
