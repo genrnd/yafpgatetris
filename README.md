@@ -1,16 +1,9 @@
-# yafpgatetris
-Yet Another Tetris on FPGA Implementation
+# Yosys-tetris project
 
-## About
-Tetris game made on Terasic DE1-SoC board.
+Originally "yafpgatetris" project by johan92
+http://habrahabr.ru/post/247535/
 
-Input: PS/2 keyboard
+This fork is an adaptation of original tetris for Yosys open synthesys framework
+http://www.clifford.at/yosys/
 
-Output: VGA display (1280x1024)
-
-See also: http://habrahabr.ru/post/247535/
-Video: http://www.youtube.com/watch?v=I6k_7Kwuilw
-
-Screenshot: ![Screen pic](http://habrastorage.org/getpro/habr/post_images/3e4/f51/5fb/3e4f515fbade2e6bd944d1377b3da560.jpg)
-
-Used Quartus 14.1.
+Utilizing Yosys' **synth_intel** command to synthesize the project for Intel Cyclone V FPGA
