@@ -8,7 +8,7 @@ module main_game_logic
   input          user_event_t                         user_event_i,
   input                                               user_event_ready_i,
   output                                              user_event_rd_req_o,
-  
+
   output         game_data_t                          game_data_o
 
 );
@@ -36,8 +36,8 @@ logic              can_move;
 logic signed [1:0] move_x;
 logic signed [1:0] move_y;
 
-move_t             req_move;
-move_t             next_req_move;
+logic [2:0]        req_move;
+logic [2:0]        next_req_move;
 
 logic [`FIELD_ROW_CNT-1:0]         full_row;
 logic [$clog2(`FIELD_ROW_CNT)-1:0] full_row_num;
@@ -52,7 +52,7 @@ enum int unsigned { IDLE_S,
                     MAKE_MOVE_S,
                     APPEND_BLOCK_S,
                     CHECK_LINES_S,
-                    GAME_OVER_S } state, next_state; 
+                    GAME_OVER_S } state, next_state;
 
 always_comb
   begin
@@ -114,7 +114,7 @@ always_comb
 always_comb
   begin
     field_shifted = field_with_color;
-    
+
     if( |full_row )
       begin
         for( int row = 0; row < `FIELD_ROW_CNT; row++ )
@@ -139,7 +139,7 @@ assign cur_block_data = cur_block.data[ cur_block.rotation ];
 always_comb
   begin
     field_with_cur_block = field_with_color;
-    
+
     if( cur_block_draw_en )
       begin
         for( int i = 0; i < 4; i++ )
@@ -158,34 +158,34 @@ assign user_event_rd_req_o = user_event_ready_i && ( ( state == IDLE_S       ) |
                                                      ( state == GAME_OVER_S  ) );
 always_comb
   begin
-    next_req_move = MOVE_DOWN;
-    
+    next_req_move[2:0] = MOVE_DOWN;
+
     if( state == WAIT_EVENT_S )
       begin
         if( user_event_ready_i )
           begin
             case( user_event_i )
-              EV_LEFT:   next_req_move = MOVE_LEFT;
-              EV_RIGHT:  next_req_move = MOVE_RIGHT;
-              EV_DOWN:   next_req_move = MOVE_DOWN;
-              EV_ROTATE: next_req_move = MOVE_ROTATE;
-              default:   next_req_move = MOVE_DOWN;
+              EV_LEFT:   next_req_move[2:0] = MOVE_LEFT;
+              EV_RIGHT:  next_req_move[2:0] = MOVE_RIGHT;
+              EV_DOWN:   next_req_move[2:0] = MOVE_DOWN;
+              EV_ROTATE: next_req_move[2:0] = MOVE_ROTATE;
+              default:   next_req_move[2:0] = MOVE_DOWN;
             endcase
           end
       end
     else
       if( state == GEN_NEW_BLOCK_S )
         begin
-          next_req_move = MOVE_APPEAR;
+          next_req_move[2:0] = MOVE_APPEAR;
         end
   end
 
 always_ff @( posedge clk_i or posedge rst_i )
   if( rst_i )
-    req_move <= MOVE_DOWN;
+    req_move[2:0] <= MOVE_DOWN;
   else
     if( ( next_state == CHECK_MOVE_S ) && ( state != CHECK_MOVE_S ) )
-      req_move <= next_req_move;
+      req_move[2:0] <= next_req_move[2:0];
 
 always_ff @( posedge clk_i or posedge rst_i )
   if( rst_i )
@@ -252,16 +252,16 @@ always_comb
 
       MAKE_MOVE_S:
         begin
-          if( ( req_move == MOVE_APPEAR ) && ( !can_move ) )
+          if( ( req_move[2:0] == MOVE_APPEAR ) && ( !can_move ) )
             next_state = GAME_OVER_S;
           else
-            if( ( req_move == MOVE_DOWN ) && ( !can_move ) )
+            if( ( req_move[2:0] == MOVE_DOWN ) && ( !can_move ) )
               begin
                 if( |field[0][`FIELD_COL_CNT:1] )
                   next_state = GAME_OVER_S;
                 else
                   // достигли дна, просто пересохраняем блок
-                  next_state = APPEND_BLOCK_S; 
+                  next_state = APPEND_BLOCK_S;
               end
             else
               begin
@@ -318,13 +318,13 @@ always_ff @( posedge clk_i or posedge rst_i )
             begin
               cur_block.x    <= cur_block.x + move_x;
               cur_block.y    <= cur_block.y + move_y;
-              
-              if( req_move == MOVE_APPEAR )
+
+              if( req_move[2:0] == MOVE_APPEAR )
                 begin
                   cur_block_draw_en <= 1'b1;
                 end
-              
-              if( req_move == MOVE_ROTATE )
+
+              if( req_move[2:0] == MOVE_ROTATE )
                 begin
                   cur_block.rotation <= cur_block.rotation + 1'd1;
                 end
@@ -358,7 +358,7 @@ check_move check_move(
 
   .run_i                                  ( check_move_run    ),
 
-  .req_move_i                             ( next_req_move     ),
+  .req_move_i                             ( next_req_move[2:0]),
   .block_i                                ( cur_block         ),
   .field_i                                ( field             ),
 
@@ -375,7 +375,7 @@ always_ff @( posedge clk_i or posedge rst_i )
   else
     check_lines_first_tick <= ( state == APPEND_BLOCK_S ) && ( next_state == CHECK_LINES_S );
 
-// сколько должно исчезнуть данных  
+// сколько должно исчезнуть данных
 logic [2:0] disappear_lines_cnt;
 
 always_comb
@@ -397,14 +397,14 @@ logic level_changed;
 
 tetris_stat stat(
   .clk_i                                  ( clk_i                  ),
-  
+
   // sync reset - when starts new game
   .srst_i                                 ( stat_srst              ),
-    
+
   .disappear_lines_cnt_i                  ( disappear_lines_cnt    ),
   .update_stat_en_i                       ( check_lines_first_tick ),
 
-  .score_o                                ( game_data_o.score      ), 
+  .score_o                                ( game_data_o.score      ),
   .lines_o                                ( game_data_o.lines      ),
   .level_o                                ( game_data_o.level      ),
 
@@ -415,12 +415,12 @@ tetris_stat stat(
 logic gen_next_block_en;
 
 assign gen_next_block_en = ( state == IDLE_S          ) ||
-                           ( state == GEN_NEW_BLOCK_S ); 
+                           ( state == GEN_NEW_BLOCK_S );
 
 gen_next_block gen_next_block(
   .clk_i                                  ( clk_i                     ),
   .en_i                                   ( gen_next_block_en         ),
-  
+
   .next_block_o                           ( next_block                )
 );
 
@@ -433,7 +433,7 @@ gen_sys_event gen_sys_event(
   .srst_i                                 ( sys_event_srst    ),
 
   .level_changed_i                        ( level_changed     ),
-    
+
   .sys_event_o                            ( sys_event         )
 
 );

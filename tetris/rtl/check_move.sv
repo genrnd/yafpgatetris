@@ -5,7 +5,7 @@ module check_move(
 
   input                                                    run_i,
 
-  input  move_t                                            req_move_i,
+  input  [2:0]                                             req_move_i,
   input  block_info_t                                      block_i,
   input  [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0]  field_i,
 
@@ -82,7 +82,7 @@ assign move_y_o = y_move;
 always_ff @( posedge clk_i )
   if( run_i )
     begin
-      case( req_move_i )
+      case( req_move_i[2:0] )
         MOVE_LEFT:
           begin
             x_move <= -1;
@@ -121,12 +121,13 @@ logic [0:3][0:3] check_data;
 always_ff @( posedge clk_i )
   begin
     if( run_i )
-      check_data <= ( req_move_i == MOVE_ROTATE ) ? ( block_i.data[ block_i.rotation + 1'd1 ] ):
-                                                    ( block_i.data[ block_i.rotation        ] );
+      check_data <= ( req_move_i[2:0] == MOVE_ROTATE ) ?
+            ( block_i.data[ block_i.rotation + 1'd1 ] ):
+            ( block_i.data[ block_i.rotation        ] );
   end
 
 always_ff @( posedge clk_i )
-  if( run_i ) 
+  if( run_i )
     begin
       can_move_o <= 1'b1;
     end

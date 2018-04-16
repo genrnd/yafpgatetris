@@ -1,11 +1,11 @@
 `include "./tetris/rtl/defs.vh"
 
 module top(
-  
+
   input              CLOCK_50,
 
   input       [9:0]  SW,
-  
+
 
   ///////// PS2 /////////
   inout              PS2_CLK,
@@ -23,7 +23,7 @@ module top(
 
 );
 
-logic vga_clk;
+/*logic vga_clk;
 
 pll pll(
   .refclk                                 ( CLOCK_50          ),
@@ -32,7 +32,10 @@ pll pll(
   .outclk_1                               ( vga_clk           )
 );
 
-assign VGA_CLK = vga_clk;
+assign VGA_CLK = vga_clk;*/
+
+// TODO: VGA_CLK should be 108MHz
+assign VGA_CLK = CLOCK_50;
 
 logic main_reset;
 
@@ -42,17 +45,17 @@ logic sw_0_d3;
 
 always_ff @( posedge CLOCK_50 )
   begin
-    sw_0_d1 <= SW[0]; 
+    sw_0_d1 <= SW[0];
     sw_0_d2 <= sw_0_d1;
-    sw_0_d3 <= sw_0_d2; 
+    sw_0_d3 <= sw_0_d2;
   end
 
 assign main_reset = sw_0_d3;
 
-logic [7:0] ps2_received_data_w;    
-logic       ps2_received_data_en_w; 
+logic [7:0] ps2_received_data_w;
+logic       ps2_received_data_en_w;
 
-PS2_Controller ps2( 
+PS2_Controller ps2(
   .CLOCK_50                               ( CLOCK_50                ),
   .reset                                  ( main_reset              ),
 
@@ -72,7 +75,7 @@ user_input user_input(
   .rst_i                                  ( main_reset              ),
 
   .ps2_clk_i                              ( CLOCK_50                ),
-    
+
   .ps2_key_data_i                         ( ps2_received_data_w     ),
   .ps2_key_data_en_i                      ( ps2_received_data_en_w  ),
 
@@ -104,7 +107,7 @@ draw_tetris draw_tetris(
   .clk_vga_i                              ( vga_clk           ),
 
   .game_data_i                            ( game_data_w       ),
-    
+
     // VGA interface
   .vga_hs_o                               ( VGA_HS            ),
   .vga_vs_o                               ( VGA_VS            ),
