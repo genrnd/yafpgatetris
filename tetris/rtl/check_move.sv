@@ -6,7 +6,14 @@ module check_move(
   input                                                    run_i,
 
   input  [2:0]                                             req_move_i,
-  input  block_info_t                                      block_i,
+
+  // block info
+  input logic        [63:0]                                block_i_data,
+  input logic        [`TETRIS_COLORS_WIDTH-1:0]            block_i_color,
+  input logic        [1:0]                                 block_i_rotation,
+  input logic signed [`FIELD_COL_CNT_WIDTH:0]              block_i_x,
+  input logic signed [`FIELD_ROW_CNT_WIDTH:0]              block_i_y,
+
   input  [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0]  field_i,
 
   output logic                                             done_o,
@@ -73,8 +80,8 @@ logic signed [`FIELD_ROW_CNT_WIDTH:0] check_field_row;
 logic signed [1:0] x_move;
 logic signed [1:0] y_move;
 
-assign check_field_col = block_i.x + cur_block_j + x_move;
-assign check_field_row = block_i.y + cur_block_i + y_move;
+assign check_field_col = block_i_x + cur_block_j + x_move;
+assign check_field_row = block_i_y + cur_block_i + y_move;
 
 assign move_x_o = x_move;
 assign move_y_o = y_move;
@@ -118,12 +125,20 @@ always_ff @( posedge clk_i )
 
 logic [0:3][0:3] check_data;
 
+// block data selectors
+logic bd_sel_high;
+assign bd_sel_high[5:0] = ( req_move_i[2:0] == MOVE_ROTATE ) ?
+            ( (block_i_rotation[1:0]+2'b1) * 16 + 15 ):
+            ( block_i_rotation[1:0] * 16 + 15 );
+logic [5:0] bd_sel_low;
+assign bd_sel_low[5:0] = ( req_move_i[2:0] == MOVE_ROTATE ) ?
+            ( (block_i_rotation[1:0]+2'b1) * 16 ):
+            ( block_i_rotation[1:0] * 16 );
+
 always_ff @( posedge clk_i )
   begin
     if( run_i )
-      check_data <= ( req_move_i[2:0] == MOVE_ROTATE ) ?
-            ( block_i.data[ block_i.rotation + 1'd1 ] ):
-            ( block_i.data[ block_i.rotation        ] );
+      check_data <= block_i_data[bd_sel_high[5:0]:bd_sel_low[5:0]];
   end
 
 always_ff @( posedge clk_i )

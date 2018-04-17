@@ -35,7 +35,7 @@
 `define  FIELD_COL_CNT_WIDTH     $clog2( `FIELD_COL_CNT )
 `define  FIELD_ROW_CNT_WIDTH     $clog2( `FIELD_ROW_CNT )
 
-// увеличиваем на два, чтобы по границам раставить "заполненные" блоки
+// plus two to set up border blocks
 `define FIELD_EXT_COL_CNT       ( `FIELD_COL_CNT + 2 )
 `define FIELD_EXT_ROW_CNT       ( `FIELD_ROW_CNT + 2 )
 

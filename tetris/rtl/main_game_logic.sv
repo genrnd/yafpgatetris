@@ -24,8 +24,20 @@ logic [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0]
 
 logic [0:3][0:3]   cur_block_data;
 
-block_info_t       next_block;
-block_info_t       cur_block;
+// next block info
+input logic        [63:0]                      next_block_data;
+input logic        [`TETRIS_COLORS_WIDTH-1:0]  next_block_color;
+input logic        [1:0]                       next_block_rotation;
+input logic signed [`FIELD_COL_CNT_WIDTH:0]    next_block_x;
+input logic signed [`FIELD_ROW_CNT_WIDTH:0]    next_block_y;
+
+// current block info
+input logic        [63:0]                      cur_block_data;
+input logic        [`TETRIS_COLORS_WIDTH-1:0]  cur_block_color;
+input logic        [1:0]                       cur_block_rotation;
+input logic signed [`FIELD_COL_CNT_WIDTH:0]    cur_block_x;
+input logic signed [`FIELD_ROW_CNT_WIDTH:0]    cur_block_y;
+
 logic              cur_block_draw_en;
 
 logic              sys_event;
@@ -260,7 +272,7 @@ always_comb
                 if( |field[0][`FIELD_COL_CNT:1] )
                   next_state = GAME_OVER_S;
                 else
-                  // bottom edge riached
+                  // bottom edge reached
                   next_state = APPEND_BLOCK_S;
               end
             else
@@ -307,7 +319,12 @@ always_ff @( posedge clk_i or posedge rst_i )
     begin
       if( state == GEN_NEW_BLOCK_S )
         begin
-          cur_block         <= next_block;
+          cur_block_data <= next_block_data;
+          cur_block_color <= next_block_color;
+          cur_block_rotation <= next_block_rotation;
+          cur_block_x <= next_block_x;
+          cur_block_y <= next_block_y;
+
           cur_block_draw_en <= 1'b0;
         end
 
@@ -345,7 +362,12 @@ always_comb
 
 always_comb
   begin
-    game_data_o.next_block         = next_block;
+    game_data_o_next_block_data = next_block_data;
+    game_data_o_next_block_color = next_block_color;
+    game_data_o_next_block_rotation = next_block_rotation;
+    game_data_o_next_block_x = next_block_x;
+    game_data_o_next_block_y = next_block_y;
+
     game_data_o.next_block_draw_en = ( state != IDLE_S      );
     game_data_o.game_over_state    = ( state == GAME_OVER_S );
   end
@@ -358,7 +380,14 @@ check_move check_move(
   .run_i                                  ( check_move_run    ),
 
   .req_move_i                             ( next_req_move[2:0]),
-  .block_i                                ( cur_block         ),
+
+  // block info
+  .block_i_data                           ( cur_block_data    ),
+  .block_i_color                          ( cur_block_color   ),
+  .block_i_rotation                       ( cur_block_rotation),
+  .block_i_x                              ( cur_block_x       ),
+  .block_i_y                              ( cur_block_y       ),
+
   .field_i                                ( field             ),
 
   .done_o                                 ( check_move_done   ),
@@ -420,7 +449,12 @@ gen_next_block gen_next_block(
   .clk_i                                  ( clk_i                     ),
   .en_i                                   ( gen_next_block_en         ),
 
-  .next_block_o                           ( next_block                )
+    // block info
+  .next_block_o_data                      ( next_block_data    ),
+  .next_block_o_color                     ( next_block_color   ),
+  .next_block_o_rotation                  ( next_block_rotation),
+  .next_block_o_x                         ( next_block_x       ),
+  .next_block_o_y                         ( next_block_y       )
 );
 
 logic sys_event_srst;
