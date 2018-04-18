@@ -175,6 +175,7 @@ set_global_assignment -name ROUTER_TIMING_OPTIMIZATION_LEVEL MAXIMUM
 set_global_assignment -name PLACEMENT_EFFORT_MULTIPLIER 4.0
 set_global_assignment -name OPTIMIZE_HOLD_TIMING "ALL PATHS"
 
+set_global_assignment -name SYSTEMVERILOG_FILE rtl_top.sv
 set_global_assignment -name SYSTEMVERILOG_FILE tetris/rtl/bin_2_bcd.sv
 set_global_assignment -name SYSTEMVERILOG_FILE tetris/rtl/gen_sys_event.sv
 set_global_assignment -name SYSTEMVERILOG_FILE tetris/rtl/draw_big_string.sv

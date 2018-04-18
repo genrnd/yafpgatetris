@@ -49,29 +49,29 @@ always_comb
     casex( ps2_key_data_sr )
       { 8'hxx, `SCAN_CODE_N }:
         begin
-          wr_event[2:0] = EV_NEW_GAME;
+          wr_event[2:0] = `EV_NEW_GAME;
           wr_event_val = !break_event;
         end
       `SCAN_CODE_ARROW_UP:
         begin
-          wr_event[2:0] = EV_ROTATE;
+          wr_event[2:0] = `EV_ROTATE;
         end
       `SCAN_CODE_ARROW_LEFT:
         begin
-          wr_event[2:0] = EV_LEFT;
+          wr_event[2:0] = `EV_LEFT;
         end
       `SCAN_CODE_ARROW_RIGHT:
         begin
-          wr_event[2:0] = EV_RIGHT;
+          wr_event[2:0] = `EV_RIGHT;
         end
       `SCAN_CODE_ARROW_DOWN:
         begin
-          wr_event[2:0] = EV_DOWN;
+          wr_event[2:0] = `EV_DOWN;
         end
       default:
         begin
           // the logic is not required indeed
-          wr_event[2:0] = EV_DOWN;
+          wr_event[2:0] = `EV_DOWN;
           wr_event_val = 1'b0;
         end
     endcase
@@ -85,7 +85,7 @@ assign fifo_wr_req = wr_event_val && ps2_key_data_en_d1 && ( !fifo_full );
 
 user_input_fifo
 #(
-  .DWIDTH                                 ( 3 )                 ) // width of event vector
+  .DWIDTH                                 ( 3 						 ) // width of event vector
 ) user_input_fifo (
   .aclr                                   ( rst_i               ),
 

@@ -22,7 +22,7 @@ logic [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0]
 // current block
 logic [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0] field_with_cur_block;
 
-logic [0:3][0:3]   cur_block_data;
+//logic [0:3][0:3]   cur_block_data;
 
 // next block info
 input logic        [63:0]                      next_block_data;
@@ -170,31 +170,31 @@ assign user_event_rd_req_o = user_event_ready_i && ( ( state == IDLE_S       ) |
                                                      ( state == GAME_OVER_S  ) );
 always_comb
   begin
-    next_req_move[2:0] = MOVE_DOWN;
+    next_req_move[2:0] = `MOVE_DOWN;
 
     if( state == WAIT_EVENT_S )
       begin
         if( user_event_ready_i )
           begin
             case( user_event_i[2:0] )
-              EV_LEFT:   next_req_move[2:0] = MOVE_LEFT;
-              EV_RIGHT:  next_req_move[2:0] = MOVE_RIGHT;
-              EV_DOWN:   next_req_move[2:0] = MOVE_DOWN;
-              EV_ROTATE: next_req_move[2:0] = MOVE_ROTATE;
-              default:   next_req_move[2:0] = MOVE_DOWN;
+              `EV_LEFT:   next_req_move[2:0] = `MOVE_LEFT;
+              `EV_RIGHT:  next_req_move[2:0] = `MOVE_RIGHT;
+              `EV_DOWN:   next_req_move[2:0] = `MOVE_DOWN;
+              `EV_ROTATE: next_req_move[2:0] = `MOVE_ROTATE;
+              default:   next_req_move[2:0] = `MOVE_DOWN;
             endcase
           end
       end
     else
       if( state == GEN_NEW_BLOCK_S )
         begin
-          next_req_move[2:0] = MOVE_APPEAR;
+          next_req_move[2:0] = `MOVE_APPEAR;
         end
   end
 
 always_ff @( posedge clk_i or posedge rst_i )
   if( rst_i )
-    req_move[2:0] <= MOVE_DOWN;
+    req_move[2:0] <= `MOVE_DOWN;
   else
     if( ( next_state == CHECK_MOVE_S ) && ( state != CHECK_MOVE_S ) )
       req_move[2:0] <= next_req_move[2:0];
@@ -214,7 +214,7 @@ always_comb
         begin
           if( user_event_ready_i )
             begin
-              if( user_event_i[2:0] == EV_NEW_GAME )
+              if( user_event_i[2:0] == `EV_NEW_GAME )
                 next_state = NEW_GAME_S;
             end
         end
@@ -234,11 +234,11 @@ always_comb
           if( user_event_ready_i )
             begin
               case( user_event_i[2:0] )
-                EV_LEFT, EV_RIGHT, EV_DOWN, EV_ROTATE:
+                `EV_LEFT, `EV_RIGHT, `EV_DOWN, `EV_ROTATE:
                   begin
                     next_state = CHECK_MOVE_S;
                   end
-                EV_NEW_GAME:
+                `EV_NEW_GAME:
                   begin
                     next_state = NEW_GAME_S;
                   end
@@ -297,7 +297,7 @@ always_comb
         begin
           if( user_event_ready_i )
             begin
-              if( user_event_i[2:0] == EV_NEW_GAME )
+              if( user_event_i[2:0] == `EV_NEW_GAME )
                 next_state = NEW_GAME_S;
             end
         end

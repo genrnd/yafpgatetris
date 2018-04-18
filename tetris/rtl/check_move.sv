@@ -90,27 +90,27 @@ always_ff @( posedge clk_i )
   if( run_i )
     begin
       case( req_move_i[2:0] )
-        MOVE_LEFT:
+        `MOVE_LEFT:
           begin
             x_move <= -1;
             y_move <= 0;
           end
-        MOVE_RIGHT:
+        `MOVE_RIGHT:
           begin
             x_move <= 1;
             y_move <= 0;
           end
-        MOVE_DOWN:
+        `MOVE_DOWN:
           begin
             x_move <= 0;
             y_move <= 1;
           end
-        MOVE_ROTATE:
+        `MOVE_ROTATE:
           begin
             x_move <= 0;
             y_move <= 0;
           end
-        MOVE_APPEAR:
+        `MOVE_APPEAR:
           begin
             x_move <= 0;
             y_move <= 0;
@@ -127,11 +127,11 @@ logic [0:3][0:3] check_data;
 
 // block data selectors
 logic bd_sel_high;
-assign bd_sel_high[5:0] = ( req_move_i[2:0] == MOVE_ROTATE ) ?
+assign bd_sel_high[5:0] = ( req_move_i[2:0] == `MOVE_ROTATE ) ?
             ( (block_i_rotation[1:0]+2'b1) * 16 + 15 ):
             ( block_i_rotation[1:0] * 16 + 15 );
 logic [5:0] bd_sel_low;
-assign bd_sel_low[5:0] = ( req_move_i[2:0] == MOVE_ROTATE ) ?
+assign bd_sel_low[5:0] = ( req_move_i[2:0] == `MOVE_ROTATE ) ?
             ( (block_i_rotation[1:0]+2'b1) * 16 ):
             ( block_i_rotation[1:0] * 16 );
 

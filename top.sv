@@ -26,10 +26,8 @@ module top(
 
 );
 
-logic VGA_CLK;
-
 pll pll(
-  .refclk( CLOCK_50 ,
+  .refclk( CLOCK_50 ),
   .rst( 1'b0 ),
   .outclk_0(  ),
   .outclk_1( VGA_CLK )

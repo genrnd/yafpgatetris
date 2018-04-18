@@ -21,7 +21,7 @@ localparam BLOCK_T = 5;
 localparam BLOCK_Z = 6;
 localparam BLOCKS_CNT = 7;
 
-logic [(BLOCKS_CNT*64-1) blocks_table;
+logic [(BLOCKS_CNT*64-1):0] blocks_table;
 
 /* **** */
 assign blocks_table[ BLOCK_I ] = { 4'b0000,
