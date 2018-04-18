@@ -1,20 +1,23 @@
-`include "./tetris/rtl/defs.vh"
+
+// Top module of yosys-tetris project
+
+// It is actually a wrapper. Serves to differentiate RTL logic that can be
+// synthesized by Yosys and platform primitives like PLL, that got synthesized
+// in Quartus.
 
 module top(
 
   input              CLOCK_50,
-
   input       [9:0]  SW,
-
 
   ///////// PS2 /////////
   inout              PS2_CLK,
   inout              PS2_DAT,
 
   ///////// VGA /////////
+  output             VGA_CLK,     // 108 Mhz derived clock
   output      [7:0]  VGA_B,
   output             VGA_BLANK_N,
-  output             VGA_CLK,
   output      [7:0]  VGA_G,
   output             VGA_HS,
   output      [7:0]  VGA_R,
@@ -23,99 +26,30 @@ module top(
 
 );
 
-/*logic vga_clk;
+logic VGA_CLK;
 
 pll pll(
-  .refclk                                 ( CLOCK_50          ),
-  .rst                                    ( 1'b0              ),
-  .outclk_0                               (                   ),
-  .outclk_1                               ( vga_clk           )
+  .refclk( CLOCK_50 ,
+  .rst( 1'b0 ),
+  .outclk_0(  ),
+  .outclk_1( VGA_CLK )
 );
 
-assign VGA_CLK = vga_clk;*/
+rtl_top rtl_top1(
+    .CLOCK_50( CLOCK_50 ),
+    .SW( SW[9:0] ),
 
-// TODO: VGA_CLK should be 108MHz
-assign VGA_CLK = CLOCK_50;
+    .PS2_CLK( PS2_CLK ),
+    .PS2_DAT( PS2_DAT ),
 
-logic main_reset;
-
-logic sw_0_d1;
-logic sw_0_d2;
-logic sw_0_d3;
-
-always_ff @( posedge CLOCK_50 )
-  begin
-    sw_0_d1 <= SW[0];
-    sw_0_d2 <= sw_0_d1;
-    sw_0_d3 <= sw_0_d2;
-  end
-
-assign main_reset = sw_0_d3;
-
-logic [7:0] ps2_received_data_w;
-logic       ps2_received_data_en_w;
-
-PS2_Controller ps2(
-  .CLOCK_50                               ( CLOCK_50                ),
-  .reset                                  ( main_reset              ),
-
-  // Bidirectionals
-  .PS2_CLK                                ( PS2_CLK                 ),
-  .PS2_DAT                                ( PS2_DAT                 ),
-
-  .received_data                          ( ps2_received_data_w     ),
-  .received_data_en                       ( ps2_received_data_en_w  )
-);
-
-logic        user_event_rd_req_w;
-logic [2:0]  user_event_w;
-logic        user_event_ready_w;
-
-user_input user_input(
-  .rst_i                                  ( main_reset              ),
-
-  .ps2_clk_i                              ( CLOCK_50                ),
-
-  .ps2_key_data_i                         ( ps2_received_data_w     ),
-  .ps2_key_data_en_i                      ( ps2_received_data_en_w  ),
-
-  .main_logic_clk_i                       ( vga_clk                 ),
-
-  .user_event_rd_req_i                    ( user_event_rd_req_w     ),
-  .user_event_o                           ( user_event_w[2:0]       ),
-  .user_event_ready_o                     ( user_event_ready_w      )
-
-);
-
-game_data_t game_data_w;
-
-main_game_logic main_logic(
-
-  .clk_i                                  ( vga_clk             ),
-  .rst_i                                  ( main_reset          ),
-
-  .user_event_i                           ( user_event_w[2:0]   ),
-  .user_event_ready_i                     ( user_event_ready_w  ),
-  .user_event_rd_req_o                    ( user_event_rd_req_w ),
-
-  .game_data_o                            ( game_data_w         )
-
-);
-
-draw_tetris draw_tetris(
-
-  .clk_vga_i                              ( vga_clk           ),
-
-  .game_data_i                            ( game_data_w       ),
-
-    // VGA interface
-  .vga_hs_o                               ( VGA_HS            ),
-  .vga_vs_o                               ( VGA_VS            ),
-  .vga_de_o                               ( VGA_BLANK_N       ),
-  .vga_r_o                                ( VGA_R             ),
-  .vga_g_o                                ( VGA_G             ),
-  .vga_b_o                                ( VGA_B             )
-
+    .VGA_CLK( VGA_CLK ),
+    .VGA_B( VGA_B[7:0] ),
+    .VGA_BLANK_N( VGA_BLANK_N ),
+    .VGA_G( VGA_G[7:0] ),
+    .VGA_HS( VGA_HS ),
+    .VGA_R( VGA_R[7:0] ),
+    .VGA_SYNC_N( VGA_SYNC_N ),
+    .VGA_VS( VGA_VS )
 );
 
 endmodule
