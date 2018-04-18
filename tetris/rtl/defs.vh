@@ -15,6 +15,17 @@
 `define MOVE_ROTATE 3'b011
 `define MOVE_APPEAR 3'b100
 
+// game state machine
+`define STATE_IDLE 0
+`define STATE_NEW_GAME 1
+`define STATE_GEN_NEW_BLOCK 2
+`define STATE_WAIT_EVENT 3
+`define STATE_CHECK_MOVE 4
+`define STATE_MAKE_MOVE 5
+`define STATE_APPEND_BLOCK 6
+`define STATE_CHECK_LINES 7
+`define STATE_GAME_OVER 8
+
 // ******* PS/2 keyboard scan codes *******
 
 // from http://www.computer-engineering.org/ps2keyboard/scancodes2.html

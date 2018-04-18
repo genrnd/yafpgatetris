@@ -56,15 +56,7 @@ logic [$clog2(`FIELD_ROW_CNT)-1:0] full_row_num;
 
 logic check_lines_first_tick;
 
-enum int unsigned { IDLE_S,
-                    NEW_GAME_S,
-                    GEN_NEW_BLOCK_S,
-                    WAIT_EVENT_S,
-                    CHECK_MOVE_S,
-                    MAKE_MOVE_S,
-                    APPEND_BLOCK_S,
-                    CHECK_LINES_S,
-                    GAME_OVER_S } state, next_state;
+int unsigned state, next_state;
 
 always_comb
   begin
@@ -87,9 +79,9 @@ always_ff @( posedge clk_i or posedge rst_i )
   else
     begin
       case( state )
-        NEW_GAME_S:     field_with_color <= field_clean;
-        APPEND_BLOCK_S: field_with_color <= field_with_cur_block;
-        CHECK_LINES_S:  field_with_color <= field_shifted;
+        `STATE_NEW_GAME:     field_with_color <= field_clean;
+        `STATE_APPEND_BLOCK: field_with_color <= field_with_cur_block;
+        `STATE_CHECK_LINES:  field_with_color <= field_shifted;
       endcase
     end
 
@@ -165,14 +157,14 @@ always_comb
       end
   end
 
-assign user_event_rd_req_o = user_event_ready_i && ( ( state == IDLE_S       ) ||
-                                                     ( state == WAIT_EVENT_S ) ||
-                                                     ( state == GAME_OVER_S  ) );
+assign user_event_rd_req_o = user_event_ready_i && ( ( state == `STATE_IDLE       ) ||
+                                                     ( state == `STATE_WAIT_EVENT ) ||
+                                                     ( state == `STATE_GAME_OVER  ) );
 always_comb
   begin
     next_req_move[2:0] = `MOVE_DOWN;
 
-    if( state == WAIT_EVENT_S )
+    if( state == `STATE_WAIT_EVENT )
       begin
         if( user_event_ready_i )
           begin
@@ -186,7 +178,7 @@ always_comb
           end
       end
     else
-      if( state == GEN_NEW_BLOCK_S )
+      if( state == `STATE_GEN_NEW_BLOCK )
         begin
           next_req_move[2:0] = `MOVE_APPEAR;
         end
@@ -196,12 +188,12 @@ always_ff @( posedge clk_i or posedge rst_i )
   if( rst_i )
     req_move[2:0] <= `MOVE_DOWN;
   else
-    if( ( next_state == CHECK_MOVE_S ) && ( state != CHECK_MOVE_S ) )
+    if( ( next_state == `STATE_CHECK_MOVE ) && ( state != `STATE_CHECK_MOVE ) )
       req_move[2:0] <= next_req_move[2:0];
 
 always_ff @( posedge clk_i or posedge rst_i )
   if( rst_i )
-    state <= IDLE_S;
+    state <= `STATE_IDLE;
   else
     state <= next_state;
 
@@ -210,41 +202,41 @@ always_comb
     next_state = state;
 
     case( state )
-      IDLE_S:
+      `STATE_IDLE:
         begin
           if( user_event_ready_i )
             begin
               if( user_event_i[2:0] == `EV_NEW_GAME )
-                next_state = NEW_GAME_S;
+                next_state = `STATE_NEW_GAME;
             end
         end
 
-      NEW_GAME_S:
+      `STATE_NEW_GAME:
         begin
-          next_state = GEN_NEW_BLOCK_S;
+          next_state = `STATE_GEN_NEW_BLOCK;
         end
 
-      GEN_NEW_BLOCK_S:
+      `STATE_GEN_NEW_BLOCK:
         begin
-          next_state = CHECK_MOVE_S;
+          next_state = `STATE_CHECK_MOVE;
         end
 
-      WAIT_EVENT_S:
+      `STATE_WAIT_EVENT:
         begin
           if( user_event_ready_i )
             begin
               case( user_event_i[2:0] )
                 `EV_LEFT, `EV_RIGHT, `EV_DOWN, `EV_ROTATE:
                   begin
-                    next_state = CHECK_MOVE_S;
+                    next_state = `STATE_CHECK_MOVE;
                   end
                 `EV_NEW_GAME:
                   begin
-                    next_state = NEW_GAME_S;
+                    next_state = `STATE_NEW_GAME;
                   end
                 default:
                   begin
-                    next_state = WAIT_EVENT_S;
+                    next_state = `STATE_WAIT_EVENT;
                   end
               endcase
             end
@@ -252,59 +244,59 @@ always_comb
             if( sys_event )
               begin
                 // shifting down after waiting
-                next_state = CHECK_MOVE_S;
+                next_state = `STATE_CHECK_MOVE;
               end
         end
 
-      CHECK_MOVE_S:
+      `STATE_CHECK_MOVE:
         begin
           if( check_move_done )
-            next_state = MAKE_MOVE_S;
+            next_state = `STATE_MAKE_MOVE;
         end
 
-      MAKE_MOVE_S:
+      `STATE_MAKE_MOVE:
         begin
-          if( ( req_move[2:0] == MOVE_APPEAR ) && ( !can_move ) )
-            next_state = GAME_OVER_S;
+          if( ( req_move[2:0] == `MOVE_APPEAR ) && ( !can_move ) )
+            next_state = `STATE_GAME_OVER;
           else
-            if( ( req_move[2:0] == MOVE_DOWN ) && ( !can_move ) )
+            if( ( req_move[2:0] == `MOVE_DOWN ) && ( !can_move ) )
               begin
                 if( |field[0][`FIELD_COL_CNT:1] )
-                  next_state = GAME_OVER_S;
+                  next_state = `STATE_GAME_OVER;
                 else
                   // bottom edge reached
-                  next_state = APPEND_BLOCK_S;
+                  next_state = `STATE_APPEND_BLOCK;
               end
             else
               begin
-                next_state = WAIT_EVENT_S;
+                next_state = `STATE_WAIT_EVENT;
               end
         end
 
-      APPEND_BLOCK_S:
+      `STATE_APPEND_BLOCK:
         begin
-          next_state = CHECK_LINES_S;
+          next_state = `STATE_CHECK_LINES;
         end
 
-      CHECK_LINES_S:
+      `STATE_CHECK_LINES:
         begin
           // preserving state if at least one cell active
           if( !( |full_row ) )
-            next_state = GEN_NEW_BLOCK_S;
+            next_state = `STATE_GEN_NEW_BLOCK;
         end
 
-      GAME_OVER_S:
+      `STATE_GAME_OVER:
         begin
           if( user_event_ready_i )
             begin
               if( user_event_i[2:0] == `EV_NEW_GAME )
-                next_state = NEW_GAME_S;
+                next_state = `STATE_NEW_GAME;
             end
         end
 
       default:
         begin
-          next_state = IDLE_S;
+          next_state = `STATE_IDLE;
         end
     endcase
   end
@@ -317,7 +309,7 @@ always_ff @( posedge clk_i or posedge rst_i )
     end
   else
     begin
-      if( state == GEN_NEW_BLOCK_S )
+      if( state == `STATE_GEN_NEW_BLOCK )
         begin
           cur_block_data <= next_block_data;
           cur_block_color <= next_block_color;
@@ -328,19 +320,19 @@ always_ff @( posedge clk_i or posedge rst_i )
           cur_block_draw_en <= 1'b0;
         end
 
-      if( state == MAKE_MOVE_S )
+      if( state == `STATE_MAKE_MOVE )
         begin
           if( can_move )
             begin
               cur_block.x    <= cur_block.x + move_x;
               cur_block.y    <= cur_block.y + move_y;
 
-              if( req_move[2:0] == MOVE_APPEAR )
+              if( req_move[2:0] == `MOVE_APPEAR )
                 begin
                   cur_block_draw_en <= 1'b1;
                 end
 
-              if( req_move[2:0] == MOVE_ROTATE )
+              if( req_move[2:0] == `MOVE_ROTATE )
                 begin
                   cur_block.rotation <= cur_block.rotation + 1'd1;
                 end
@@ -368,11 +360,11 @@ always_comb
     game_data_o_next_block_x = next_block_x;
     game_data_o_next_block_y = next_block_y;
 
-    game_data_o.next_block_draw_en = ( state != IDLE_S      );
-    game_data_o.game_over_state    = ( state == GAME_OVER_S );
+    game_data_o.next_block_draw_en = ( state != `STATE_IDLE      );
+    game_data_o.game_over_state    = ( state == `STATE_GAME_OVER );
   end
 
-assign check_move_run = ( state != CHECK_MOVE_S ) && ( next_state == CHECK_MOVE_S );
+assign check_move_run = ( state != `STATE_CHECK_MOVE ) && ( next_state == `STATE_CHECK_MOVE );
 
 check_move check_move(
   .clk_i                                  ( clk_i             ),
@@ -401,7 +393,7 @@ always_ff @( posedge clk_i or posedge rst_i )
   if( rst_i )
     check_lines_first_tick <= '0;
   else
-    check_lines_first_tick <= ( state == APPEND_BLOCK_S ) && ( next_state == CHECK_LINES_S );
+    check_lines_first_tick <= ( state == `STATE_APPEND_BLOCK ) && ( next_state == `STATE_CHECK_LINES );
 
 
 logic [2:0] disappear_lines_cnt;
@@ -419,7 +411,7 @@ always_comb
 
 logic stat_srst;
 
-assign stat_srst = ( state == NEW_GAME_S ) && ( next_state != NEW_GAME_S );
+assign stat_srst = ( state == `STATE_NEW_GAME ) && ( next_state != STATE_NEW_GAME );
 
 logic level_changed;
 
@@ -442,8 +434,8 @@ tetris_stat stat(
 
 logic gen_next_block_en;
 
-assign gen_next_block_en = ( state == IDLE_S          ) ||
-                           ( state == GEN_NEW_BLOCK_S );
+assign gen_next_block_en = ( state == STATE_IDLE          ) ||
+                           ( state == STATE_GEN_NEW_BLOCK );
 
 gen_next_block gen_next_block(
   .clk_i                                  ( clk_i                     ),
@@ -459,7 +451,7 @@ gen_next_block gen_next_block(
 
 logic sys_event_srst;
 
-assign sys_event_srst = ( state == NEW_GAME_S ) && ( next_state != NEW_GAME_S );
+assign sys_event_srst = ( state == STATE_NEW_GAME ) && ( next_state != STATE_NEW_GAME );
 
 gen_sys_event gen_sys_event(
   .clk_i                                  ( clk_i             ),
