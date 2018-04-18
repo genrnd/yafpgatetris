@@ -2,25 +2,30 @@
 
 module main_game_logic
 (
-  input                                               clk_i,
-  input                                               rst_i,
-
-  input                                        [2:0]  user_event_i,
-  input                                               user_event_ready_i,
-  output                                              user_event_rd_req_o,
-
-  output         game_data_t                          game_data_o
+  input clk_i,
+  input rst_i,
+  input [2:0] user_event_i,
+  input user_event_ready_i,
+  output user_event_rd_req_o,
+  // game data
+  output game_data_o_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0],
+  output game_data_o_score [5:0][3:0],
+  output game_data_o_lines [5:0][3:0],
+  output game_data_o_level [5:0][3:0],
+  output block_info_t game_data_o_next_block,
+  output game_data_o_next_block_draw_en,
+  output game_data_o_game_over_state
 
 );
 
 // game field state
-logic [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0]                           field;
-logic [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0] field_with_color;
-logic [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0] field_clean;
-logic [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0] field_shifted;
+logic field [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0];
+logic field_with_color [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0];
+logic field_clean [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0];
+logic field_shifted [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0];
 
 // current block
-logic [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0] field_with_cur_block;
+logic field_with_cur_block [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0];
 
 //logic [0:3][0:3]   cur_block_data;
 
@@ -347,7 +352,7 @@ always_comb
       begin
         for( int row = 0; row < `FIELD_ROW_CNT; row++ )
           begin
-            game_data_o.field[row][col] = field_with_cur_block[ row + 1 ][ col + 1 ];
+            game_data_o_field[row][col] = field_with_cur_block[ row + 1 ][ col + 1 ];
           end
       end
   end
@@ -360,8 +365,8 @@ always_comb
     game_data_o_next_block_x = next_block_x;
     game_data_o_next_block_y = next_block_y;
 
-    game_data_o.next_block_draw_en = ( state != `STATE_IDLE      );
-    game_data_o.game_over_state    = ( state == `STATE_GAME_OVER );
+    game_data_o_next_block_draw_en = ( state != `STATE_IDLE      );
+    game_data_o_game_over_state    = ( state == `STATE_GAME_OVER );
   end
 
 assign check_move_run = ( state != `STATE_CHECK_MOVE ) && ( next_state == `STATE_CHECK_MOVE );
@@ -424,9 +429,9 @@ tetris_stat stat(
   .disappear_lines_cnt_i                  ( disappear_lines_cnt    ),
   .update_stat_en_i                       ( check_lines_first_tick ),
 
-  .score_o                                ( game_data_o.score      ),
-  .lines_o                                ( game_data_o.lines      ),
-  .level_o                                ( game_data_o.level      ),
+  .score_o                                ( game_data_o_score      ),
+  .lines_o                                ( game_data_o_lines      ),
+  .level_o                                ( game_data_o_level      ),
 
   .level_changed_o                        ( level_changed          )
 );

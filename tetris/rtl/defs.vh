@@ -61,22 +61,6 @@ typedef struct packed {
   logic signed [`FIELD_ROW_CNT_WIDTH:0]        y;
 } block_info_t;
 
-typedef struct packed {
-  // current field state
-  logic [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0] field;
-
-  // output difgits, 4 bits per digit
-  logic [5:0][3:0] score;
-  logic [5:0][3:0] lines;
-  logic [5:0][3:0] level;
-
-  block_info_t     next_block;
-  logic            next_block_draw_en;
-
-  logic            game_over_state;
-} game_data_t;
-
-
 // ******* Colors *******
 `define COLOR_BACKGROUND  24'h80_80_80
 

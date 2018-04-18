@@ -6,24 +6,26 @@
 `include "../rtl/defs.vh"
 
 module draw_field
-#( 
-  parameter PIX_WIDTH     = 12
-)
-(
-  input                                 clk_i,
-
-  input  [PIX_WIDTH-1:0]                pix_x_i,
-  input  [PIX_WIDTH-1:0]                pix_y_i,
-  
-  input  game_data_t                    game_data_i,
-
+#(
+  parameter PIX_WIDTH = 12
+)(
+  input clk_i,
+  input [PIX_WIDTH-1:0] pix_x_i,
+  input [PIX_WIDTH-1:0]  pix_y_i,
+  // game data
+  input game_data_i_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0],
+  //input game_data_i_score [5:0][3:0],
+  //input game_data_i_lines [5:0][3:0],
+  //input game_data_i_level [5:0][3:0],
+  input block_info_t game_data_i_next_block,
+  input game_data_i_next_block_draw_en,
+  //input game_data_i_game_over_state,
   // выходные данные RGB
-  output [23:0]                         vga_data_o,
-  output                                vga_data_en_o
-
+  output [23:0] vga_data_o,
+  output        vga_data_en_o
 );
 
-// значения X и Y для одного блока в значениях реальных пикселей 
+// значения X и Y для одного блока в значениях реальных пикселей
 localparam BRICK_X = 30;
 localparam BRICK_Y = 30;
 
@@ -44,8 +46,8 @@ logic [PIX_WIDTH-1:0]              main_field_end_y;
 
 
 draw_field_helper
-#( 
-  .PIX_WIDTH                              ( PIX_WIDTH         ), 
+#(
+  .PIX_WIDTH                              ( PIX_WIDTH         ),
 
   .BRICK_X                                ( BRICK_X           ),
   .BRICK_Y                                ( BRICK_Y           ),
@@ -91,13 +93,13 @@ logic                              nbp_field_in_field;
 logic                              nbp_field_in_brick;
 
 draw_field_helper
-#( 
-  .PIX_WIDTH                              ( PIX_WIDTH         ), 
+#(
+  .PIX_WIDTH                              ( PIX_WIDTH         ),
 
   .BRICK_X                                ( BRICK_X           ),
   .BRICK_Y                                ( BRICK_Y           ),
 
-  
+
   .BRICK_X_CNT                            ( NBP_BRICK_CNT     ),
   .BRICK_Y_CNT                            ( NBP_BRICK_CNT     ),
 
@@ -128,7 +130,7 @@ logic [NBP_BRICK_CNT-1:0][NBP_BRICK_CNT-1:0][`TETRIS_COLORS_CNT-1:0] nbp_field;
 
 logic [0:3][0:3] nbp_block_data;
 
-assign nbp_block_data = game_data_i.next_block.data[ game_data_i.next_block.rotation ];
+assign nbp_block_data = game_data_i_next_block.data[ game_data_i_next_block.rotation ];
 
 always_comb
   begin
@@ -143,8 +145,8 @@ always_comb
               end
             else
               begin
-                if( nbp_block_data[i-1][j-1] && game_data_i.next_block_draw_en ) 
-                  nbp_field[i][j] = game_data_i.next_block.color;  
+                if( nbp_block_data[i-1][j-1] && game_data_i_next_block_draw_en )
+                  nbp_field[i][j] = game_data_i_next_block.color;
                 else
                   nbp_field[i][j] = 'd0;
               end
@@ -168,12 +170,12 @@ assign vga_colors_pos[7] = `COLOR_BRICKS_7;
 always_comb
   begin
     vga_data = `COLOR_BORDERS;
-    
+
     if( main_field_in_field )
       begin
         if( main_field_in_brick )
           begin
-            vga_data = vga_colors_pos[ game_data_i.field[ main_field_row_num ][ main_field_col_num ] ]; 
+            vga_data = vga_colors_pos[ game_data_i_field[ main_field_row_num ][ main_field_col_num ] ];
           end
       end
     else
@@ -181,7 +183,7 @@ always_comb
         begin
           if( nbp_field_in_brick )
             begin
-              vga_data = vga_colors_pos[ nbp_field[ nbp_field_row_num ][ nbp_field_col_num ] ]; 
+              vga_data = vga_colors_pos[ nbp_field[ nbp_field_row_num ][ nbp_field_col_num ] ];
             end
         end
   end

@@ -2,17 +2,22 @@
 
 module draw_tetris(
 
-  input                                 clk_vga_i,
-
-  input game_data_t                     game_data_i,
-  
+  input clk_vga_i,
+  // game data
+  input game_data_i_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0],
+  input game_data_i_score [5:0][3:0],
+  input game_data_i_lines [5:0][3:0],
+  input game_data_i_level [5:0][3:0],
+  input block_info_t game_data_i_next_block,
+  input game_data_i_next_block_draw_en,
+  input game_data_i_game_over_state,
   // VGA interface
-  output  logic                         vga_hs_o,
-  output  logic                         vga_vs_o,
-  output  logic                         vga_de_o,
-  output  logic [7:0]                   vga_r_o,
-  output  logic [7:0]                   vga_g_o,
-  output  logic [7:0]                   vga_b_o
+  output logic vga_hs_o,
+  output logic vga_vs_o,
+  output logic vga_de_o,
+  output logic [7:0] vga_r_o,
+  output logic [7:0] vga_g_o,
+  output logic [7:0] vga_b_o
 
 );
 localparam PIX_WIDTH = 12;
@@ -31,46 +36,57 @@ logic [PIX_WIDTH-1:0] pix_y;
 
 logic [23:0]          vga_data;
 
-draw_strings
-#( 
-  .PIX_WIDTH                              ( PIX_WIDTH             )
+draw_strings #(
+  .PIX_WIDTH( PIX_WIDTH )
 ) draw_strings (
-  .clk_i                                  ( clk_vga_i             ),
 
-  .pix_x_i                                ( pix_x                 ),
-  .pix_y_i                                ( pix_y                 ),
-    
-  .game_data_i                            ( game_data_i           ),
+  .clk_i ( clk_vga_i ),
+  .pix_x_i ( pix_x ),
+  .pix_y_i ( pix_y ),
 
-  .vga_data_o                             ( strings_vga_data_w    ),
-  .vga_data_en_o                          ( strings_vga_data_en_w )
+  // game data (passing only apropriate fields of game data)
+  //.game_data_i_field( game_data_i_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0] ),
+  .game_data_i_score( game_data_i_score [5:0][3:0] ),
+  .game_data_i_lines( game_data_i_lines [5:0][3:0] ),
+  .game_data_i_level( game_data_i_level [5:0][3:0] ),
+  //.game_data_i_next_block( game_data_i_next_block ),
+  //.game_data_i_next_block_draw_en( game_data_i_next_block_draw_en ),
+  .game_data_i_game_over_state( game_data_i_game_over_state ),
+
+  .vga_data_o ( strings_vga_data_w ),
+  .vga_data_en_o ( strings_vga_data_en_w )
 );
 
-draw_field
-#( 
-  .PIX_WIDTH                              ( PIX_WIDTH           )
+draw_field #(
+  .PIX_WIDTH( PIX_WIDTH )
 ) draw_field (
 
-  .clk_i                                  ( clk_vga_i           ),
+  .clk_i ( clk_vga_i ),
+  .pix_x_i ( pix_x ),
+  .pix_y_i ( pix_y ),
 
-  .pix_x_i                                ( pix_x               ),
-  .pix_y_i                                ( pix_y               ),
-  
-  .game_data_i                            ( game_data_i         ),
-    
-  .vga_data_o                             ( field_vga_data_w    ),
-  .vga_data_en_o                          ( field_vga_data_en_w )
+  // game data (passing only apropriate fields of game data)
+  .game_data_i_field( game_data_i_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0] ),
+  //.game_data_i_score( game_data_i_score [5:0][3:0] ),
+  //.game_data_i_lines( game_data_i_lines [5:0][3:0] ),
+  //.game_data_i_level( game_data_i_level [5:0][3:0] ),
+  .game_data_i_next_block( game_data_i_next_block ),
+  .game_data_i_next_block_draw_en( game_data_i_next_block_draw_en ),
+  //.game_data_i_game_over_state( game_data_i_game_over_state ),
+
+  .vga_data_o ( strings_vga_data_w ),
+  .vga_data_en_o ( strings_vga_data_en_w )
 
 );
 
 always_comb
   begin
     vga_data = `COLOR_BACKGROUND;
-    
+
     // strings got priority to draw "game over" over field
     if( strings_vga_data_en_w )
       vga_data = strings_vga_data_w;
-    else 
+    else
       if( field_vga_data_en_w )
         vga_data = field_vga_data_w;
   end
@@ -108,9 +124,9 @@ vga_time_generator vga_time_generator_instance(
 
   .h_disp                               ( H_DISP                   ),
   .h_fporch                             ( H_FPORCH                 ),
-  .h_sync                               ( H_SYNC                   ), 
+  .h_sync                               ( H_SYNC                   ),
   .h_bporch                             ( H_BPORCH                 ),
-                                               
+
   .v_disp                               ( V_DISP                   ),
   .v_fporch                             ( V_FPORCH                 ),
   .v_sync                               ( V_SYNC                   ),
@@ -118,13 +134,13 @@ vga_time_generator vga_time_generator_instance(
   .hs_polarity                          ( 1'b0                     ),
   .vs_polarity                          ( 1'b0                     ),
   .frame_interlaced                     ( 1'b0                     ),
-                  
+
   .vga_hs                               ( pix_hs                   ),
   .vga_vs                               ( pix_vs                   ),
   .vga_de                               ( pix_de                   ),
   .pixel_x                              ( pix_x                    ),
   .pixel_y                              ( pix_y                    ),
-  .pixel_i_odd_frame                    (                          ) 
+  .pixel_i_odd_frame                    (                          )
 );
 
 logic                 pix_hs_d1;
@@ -134,7 +150,7 @@ logic                 pix_de_d1;
 always_ff @( posedge clk_vga_i )
   begin
     { vga_r_o, vga_g_o, vga_b_o } <= vga_data;
-    
+
     // delay because draw_strings/field got latency
     pix_hs_d1                     <= pix_hs;
     pix_vs_d1                     <= pix_vs;
