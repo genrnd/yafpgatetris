@@ -217,7 +217,7 @@ module  pll
 		pll_altera_pll_altera_pll_i_1098.duty_cycle7 = 50,
 		pll_altera_pll_altera_pll_i_1098.duty_cycle8 = 50,
 		pll_altera_pll_altera_pll_i_1098.duty_cycle9 = 50,
-		pll_altera_pll_altera_pll_i_1098.fractional_vco_multiplier = "true",
+		pll_altera_pll_altera_pll_i_1098.fractional_vco_multiplier = "false",
 		pll_altera_pll_altera_pll_i_1098.m_cnt_bypass_en = "false",
 		pll_altera_pll_altera_pll_i_1098.m_cnt_hi_div = 1,
 		pll_altera_pll_altera_pll_i_1098.m_cnt_lo_div = 1,
@@ -229,8 +229,8 @@ module  pll
 		pll_altera_pll_altera_pll_i_1098.n_cnt_odd_div_duty_en = "false",
 		pll_altera_pll_altera_pll_i_1098.number_of_clocks = 2,
 		pll_altera_pll_altera_pll_i_1098.operation_mode = "normal",
-		pll_altera_pll_altera_pll_i_1098.output_clock_frequency0 = "25.174999 MHz",
-		pll_altera_pll_altera_pll_i_1098.output_clock_frequency1 = "107.892852 MHz",
+		pll_altera_pll_altera_pll_i_1098.output_clock_frequency0 = "50.000000 MHz",
+		pll_altera_pll_altera_pll_i_1098.output_clock_frequency1 = "107.692307 MHz",
 		pll_altera_pll_altera_pll_i_1098.output_clock_frequency10 = "0 MHz",
 		pll_altera_pll_altera_pll_i_1098.output_clock_frequency11 = "0 MHz",
 		pll_altera_pll_altera_pll_i_1098.output_clock_frequency12 = "0 MHz",
@@ -289,7 +289,7 @@ module  pll
 		pll_altera_pll_altera_pll_i_1098.pll_vco_div = 1,
 		pll_altera_pll_altera_pll_i_1098.pll_vcoph_div = 1,
 		pll_altera_pll_altera_pll_i_1098.refclk1_frequency = "0 MHz",
-		pll_altera_pll_altera_pll_i_1098.reference_clock_frequency = "50.0 MHz",
+		pll_altera_pll_altera_pll_i_1098.reference_clock_frequency = "25.0 MHz",
 		pll_altera_pll_altera_pll_i_1098.sim_additional_refclk_cycles_to_lock = 0;
 	assign
 		locked = wire_pll_altera_pll_altera_pll_i_1098_locked,

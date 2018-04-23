@@ -11,12 +11,10 @@ module rtl_top(
 
     // VGA
     input VGA_CLK,         // 108 Mhz derived clock
-    output [7:0] VGA_B,
-    output VGA_BLANK_N,
-    output [7:0] VGA_G,
-    output VGA_HS,
     output [7:0] VGA_R,
-    output VGA_SYNC_N,     // not used (?)
+    output [7:0] VGA_G,
+    output [7:0] VGA_B,
+    output VGA_HS,
     output VGA_VS
 );
 
@@ -117,7 +115,7 @@ draw_tetris draw_tetris(
       // VGA interface
     .vga_hs_o( VGA_HS ),
     .vga_vs_o( VGA_VS ),
-    .vga_de_o( VGA_BLANK_N ),
+    .vga_de_o(  ),
     .vga_r_o( VGA_R ),
     .vga_g_o( VGA_G ),
     .vga_b_o( VGA_B )
