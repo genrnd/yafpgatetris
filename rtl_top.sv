@@ -3,7 +3,7 @@
 module rtl_top(
 
     input CLOCK_50,
-    input [9:0] SW,
+    input NRST,
 
     // PS2
     inout PS2_CLK,
@@ -18,26 +18,12 @@ module rtl_top(
     output VGA_VS
 );
 
-logic main_reset;
-logic sw_0_d1;
-logic sw_0_d2;
-logic sw_0_d3;
-
-always_ff @( posedge CLOCK_50 )
-  begin
-    sw_0_d1 <= SW[0];
-    sw_0_d2 <= sw_0_d1;
-    sw_0_d3 <= sw_0_d2;
-  end
-
-assign main_reset = sw_0_d3;
-
 logic [7:0] ps2_received_data_w;
-logic       ps2_received_data_en_w;
+logic ps2_received_data_en_w;
 
 PS2_Controller ps2(
     .CLOCK_50 ( CLOCK_50 ),
-    .reset ( main_reset),
+    .reset ( NRST ),
     // Bidirectionals
     .PS2_CLK ( PS2_CLK ),
     .PS2_DAT ( PS2_DAT ),
@@ -45,12 +31,12 @@ PS2_Controller ps2(
     .received_data_en ( ps2_received_data_en_w )
 );
 
-logic        user_event_rd_req_w;
-logic [2:0]  user_event_w;
-logic        user_event_ready_w;
+logic user_event_rd_req_w;
+logic [2:0] user_event_w;
+logic user_event_ready_w;
 
 user_input user_input(
-    .rst_i ( main_reset ),
+    .rst_i ( NRST ),
     .ps2_clk_i ( CLOCK_50 ),
     .ps2_key_data_i ( ps2_received_data_w ),
     .ps2_key_data_en_i ( ps2_received_data_en_w ),
@@ -61,7 +47,8 @@ user_input user_input(
 );
 
 // game data
-logic gd_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0];
+// logic gd_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0];
+logic [1000:0][1000:0] gd_field [1000:0];
 logic gd_score [5:0][3:0];
 logic gd_lines [5:0][3:0];
 logic gd_level [5:0][3:0];
@@ -76,7 +63,7 @@ logic gd_game_over_state;
 
 main_game_logic main_logic(
     .clk_i ( VGA_CLK ),
-    .rst_i ( main_reset ),
+    .rst_i ( NRST ),
     .user_event_i ( user_event_w[2:0] ),
     .user_event_ready_i ( user_event_ready_w ),
     .user_event_rd_req_o ( user_event_rd_req_w ),
