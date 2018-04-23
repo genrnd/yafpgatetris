@@ -53,14 +53,6 @@
 `define TETRIS_COLORS_CNT       8
 `define TETRIS_COLORS_WIDTH     $clog2( `TETRIS_COLORS_CNT )
 
-typedef struct packed {
-  logic        [3:0][0:3][0:3]                 data;
-  logic        [`TETRIS_COLORS_WIDTH-1:0]      color;
-  logic        [1:0]                           rotation;
-  logic signed [`FIELD_COL_CNT_WIDTH:0]        x;
-  logic signed [`FIELD_ROW_CNT_WIDTH:0]        y;
-} block_info_t;
-
 // ******* Colors *******
 `define COLOR_BACKGROUND  24'h80_80_80
 

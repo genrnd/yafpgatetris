@@ -1,14 +1,11 @@
 `include "./tetris/rtl/defs.vh"
 
 module rtl_top(
-
   input              CLOCK_50,
   input       [9:0]  SW,
-
   ///////// PS2 /////////
   inout              PS2_CLK,
   inout              PS2_DAT,
-
   ///////// VGA /////////
   input              VGA_CLK,     // 108 Mhz derived clock
   output      [7:0]  VGA_B,
@@ -18,11 +15,9 @@ module rtl_top(
   output      [7:0]  VGA_R,
   output             VGA_SYNC_N, // not used (?)
   output             VGA_VS
-
 );
 
 logic main_reset;
-
 logic sw_0_d1;
 logic sw_0_d2;
 logic sw_0_d3;
@@ -66,13 +61,17 @@ user_input user_input(
 );
 
 // game data
-logic game_data_w_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0];
-logic game_data_w_score [5:0][3:0];
-logic game_data_w_lines [5:0][3:0];
-logic game_data_w_level [5:0][3:0];
-block_info_t game_data_w_next_block;
-logic game_data_w_next_block_draw_en;
-logic game_data_w_game_over_state;
+logic gd_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0];
+logic gd_score [5:0][3:0];
+logic gd_lines [5:0][3:0];
+logic gd_level [5:0][3:0];
+logic gd_next_block_data [3:0][0:3][0:3];
+logic [`TETRIS_COLORS_WIDTH-1:0] gd_next_block_color;
+logic [1:0] gd_next_block_rotation;
+logic signed [`FIELD_COL_CNT_WIDTH:0] gd_next_block_x;
+logic signed [`FIELD_ROW_CNT_WIDTH:0] gd_next_block_y;
+logic gd_next_block_draw_en;
+logic gd_game_over_state;
 
 
 main_game_logic main_logic(
@@ -81,27 +80,38 @@ main_game_logic main_logic(
   .user_event_i ( user_event_w[2:0] ),
   .user_event_ready_i ( user_event_ready_w ),
   .user_event_rd_req_o ( user_event_rd_req_w ),
-  // game data
-  .game_data_o_field( game_data_w_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0] ),
-  .game_data_o_score( game_data_w_score [5:0][3:0] ),
-  .game_data_o_lines( game_data_w_lines [5:0][3:0] ),
-  .game_data_o_level( game_data_w_level [5:0][3:0] ),
-  .game_data_o_next_block( game_data_w_next_block ),
-  .game_data_o_next_block_draw_en( game_data_w_next_block_draw_en ),
-  .game_data_o_game_over_state( game_data_w_game_over_state )
+
+  // game data input
+  .gd_field( gd_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0] ),
+  .gd_score( gd_score [5:0][3:0] ),
+  .gd_lines( gd_lines [5:0][3:0] ),
+  .gd_level( gd_level [5:0][3:0] ),
+  .gd_next_block_data( gd_next_block_data [3:0][0:3][0:3] ),
+  .gd_next_block_color( gd_next_block_color[`TETRIS_COLORS_WIDTH-1:0] ),
+  .gd_next_block_rotation( gd_next_block_rotation[1:0] ),
+  .gd_next_block_x( gd_next_block_x[`FIELD_COL_CNT_WIDTH:0] ),
+  .gd_next_block_y( gd_next_block_y[`FIELD_ROW_CNT_WIDTH:0] ),
+  .gd_next_block_draw_en( gd_next_block_draw_en ),
+  .gd_game_over_state( gd_game_over_state )
 );
 
 
 draw_tetris draw_tetris(
   .clk_vga_i( VGA_CLK ),
-  // game data
-  .game_data_i_field( game_data_w_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0] ),
-  .game_data_i_score( game_data_w_score [5:0][3:0] ),
-  .game_data_i_lines( game_data_w_lines [5:0][3:0] ),
-  .game_data_i_level( game_data_w_level [5:0][3:0] ),
-  .game_data_i_next_block( game_data_w_next_block ),
-  .game_data_i_next_block_draw_en( game_data_w_next_block_draw_en ),
-  .game_data_i_game_over_state( game_data_w_game_over_state ),
+
+  // game data output
+  .gd_field( gd_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0] ),
+  .gd_score( gd_score [5:0][3:0] ),
+  .gd_lines( gd_lines [5:0][3:0] ),
+  .gd_level( gd_level [5:0][3:0] ),
+  .gd_next_block_data( gd_next_block_data [3:0][0:3][0:3] ),
+  .gd_next_block_color( gd_next_block_color[`TETRIS_COLORS_WIDTH-1:0] ),
+  .gd_next_block_rotation( gd_next_block_rotation[1:0] ),
+  .gd_next_block_x( gd_next_block_x[`FIELD_COL_CNT_WIDTH:0] ),
+  .gd_next_block_y( gd_next_block_y[`FIELD_ROW_CNT_WIDTH:0] ),
+  .gd_next_block_draw_en( gd_next_block_draw_en ),
+  .gd_game_over_state( gd_game_over_state ),
+
     // VGA interface
   .vga_hs_o( VGA_HS ),
   .vga_vs_o( VGA_VS ),

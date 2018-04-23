@@ -12,14 +12,20 @@ module draw_field
   input clk_i,
   input [PIX_WIDTH-1:0] pix_x_i,
   input [PIX_WIDTH-1:0]  pix_y_i,
-  // game data
-  input game_data_i_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0],
-  //input game_data_i_score [5:0][3:0],
-  //input game_data_i_lines [5:0][3:0],
-  //input game_data_i_level [5:0][3:0],
-  input block_info_t game_data_i_next_block,
-  input game_data_i_next_block_draw_en,
-  //input game_data_i_game_over_state,
+
+  // game data (passing only apropriate fields of game data)
+  input gd_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0],
+  //input gd_score [5:0][3:0],
+  //input gd_lines [5:0][3:0],
+  //input gd_level [5:0][3:0],
+  input gd_next_block_data [3:0][0:3][0:3],
+  input [`TETRIS_COLORS_WIDTH-1:0] gd_next_block_color,
+  input [1:0] gd_next_block_rotation,
+  input signed [`FIELD_COL_CNT_WIDTH:0] gd_next_block_x,
+  input signed [`FIELD_ROW_CNT_WIDTH:0] gd_next_block_y,
+  input gd_next_block_draw_en,
+  //input gd_game_over_state,
+
   // выходные данные RGB
   output [23:0] vga_data_o,
   output        vga_data_en_o
@@ -130,7 +136,7 @@ logic [NBP_BRICK_CNT-1:0][NBP_BRICK_CNT-1:0][`TETRIS_COLORS_CNT-1:0] nbp_field;
 
 logic [0:3][0:3] nbp_block_data;
 
-assign nbp_block_data = game_data_i_next_block.data[ game_data_i_next_block.rotation ];
+assign nbp_block_data = gd_next_block_data[ gd_next_block_rotation ];
 
 always_comb
   begin
@@ -145,8 +151,8 @@ always_comb
               end
             else
               begin
-                if( nbp_block_data[i-1][j-1] && game_data_i_next_block_draw_en )
-                  nbp_field[i][j] = game_data_i_next_block.color;
+                if( nbp_block_data[i-1][j-1] && gd_next_block_draw_en )
+                  nbp_field[i][j] = gd_next_block_color;
                 else
                   nbp_field[i][j] = 'd0;
               end
@@ -175,7 +181,7 @@ always_comb
       begin
         if( main_field_in_brick )
           begin
-            vga_data = vga_colors_pos[ game_data_i_field[ main_field_row_num ][ main_field_col_num ] ];
+            vga_data = vga_colors_pos[ gd_field[ main_field_row_num ][ main_field_col_num ] ];
           end
       end
     else

@@ -7,14 +7,19 @@ module main_game_logic
   input [2:0] user_event_i,
   input user_event_ready_i,
   output user_event_rd_req_o,
+
   // game data
-  output game_data_o_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0],
-  output game_data_o_score [5:0][3:0],
-  output game_data_o_lines [5:0][3:0],
-  output game_data_o_level [5:0][3:0],
-  output block_info_t game_data_o_next_block,
-  output game_data_o_next_block_draw_en,
-  output game_data_o_game_over_state
+  output gd_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0],
+  output gd_score [5:0][3:0],
+  output gd_lines [5:0][3:0],
+  output gd_level [5:0][3:0],
+  output gd_next_block_data [3:0][0:3][0:3],
+  output [`TETRIS_COLORS_WIDTH-1:0] gd_next_block_color,
+  output [1:0] gd_next_block_rotation,
+  output signed [`FIELD_COL_CNT_WIDTH:0] gd_next_block_x,
+  output signed [`FIELD_ROW_CNT_WIDTH:0] gd_next_block_y,
+  output gd_next_block_draw_en,
+  output gd_game_over_state
 
 );
 
@@ -352,21 +357,21 @@ always_comb
       begin
         for( int row = 0; row < `FIELD_ROW_CNT; row++ )
           begin
-            game_data_o_field[row][col] = field_with_cur_block[ row + 1 ][ col + 1 ];
+            gd_field[row][col] = field_with_cur_block[ row + 1 ][ col + 1 ];
           end
       end
   end
 
 always_comb
   begin
-    game_data_o_next_block_data = next_block_data;
-    game_data_o_next_block_color = next_block_color;
-    game_data_o_next_block_rotation = next_block_rotation;
-    game_data_o_next_block_x = next_block_x;
-    game_data_o_next_block_y = next_block_y;
+    gd_next_block_data = next_block_data;
+    gd_next_block_color = next_block_color;
+    gd_next_block_rotation = next_block_rotation;
+    gd_next_block_x = next_block_x;
+    gd_next_block_y = next_block_y;
 
-    game_data_o_next_block_draw_en = ( state != `STATE_IDLE      );
-    game_data_o_game_over_state    = ( state == `STATE_GAME_OVER );
+    gd_next_block_draw_en = ( state != `STATE_IDLE      );
+    gd_game_over_state    = ( state == `STATE_GAME_OVER );
   end
 
 assign check_move_run = ( state != `STATE_CHECK_MOVE ) && ( next_state == `STATE_CHECK_MOVE );
@@ -429,9 +434,9 @@ tetris_stat stat(
   .disappear_lines_cnt_i                  ( disappear_lines_cnt    ),
   .update_stat_en_i                       ( check_lines_first_tick ),
 
-  .score_o                                ( game_data_o_score      ),
-  .lines_o                                ( game_data_o_lines      ),
-  .level_o                                ( game_data_o_level      ),
+  .score_o                                ( gd_score      ),
+  .lines_o                                ( gd_lines      ),
+  .level_o                                ( gd_level      ),
 
   .level_changed_o                        ( level_changed          )
 );

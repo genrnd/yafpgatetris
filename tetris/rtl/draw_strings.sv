@@ -7,14 +7,20 @@ module draw_strings
   input clk_i,
   input [PIX_WIDTH-1:0] pix_x_i,
   input [PIX_WIDTH-1:0]  pix_y_i,
-  // game data
-  //input game_data_i_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0],
-  input game_data_i_score [5:0][3:0],
-  input game_data_i_lines [5:0][3:0],
-  input game_data_i_level [5:0][3:0],
-  //input block_info_t game_data_i_next_block,
-  //input game_data_i_next_block_draw_en,
-  input game_data_i_game_over_state,
+
+  // game data (passing only apropriate fields of game data)
+  //input gd_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0],
+  input gd_score [5:0][3:0],
+  input gd_lines [5:0][3:0],
+  input gd_level [5:0][3:0],
+  //input gd_next_block_data [3:0][0:3][0:3],
+  //input [`TETRIS_COLORS_WIDTH-1:0] gd_next_block_color,
+  //input [1:0] gd_next_block_rotation,
+  //input signed [`FIELD_COL_CNT_WIDTH:0] gd_next_block_x,
+  //input signed [`FIELD_ROW_CNT_WIDTH:0] gd_next_block_y,
+  //input gd_next_block_draw_en,
+  input gd_game_over_state,
+
   // выходные данные RGB
   output [23:0] vga_data_o,
   output        vga_data_en_o
@@ -97,9 +103,9 @@ always_comb
   begin
     for( int i = 0; i < NUMBER_LEN; i++ )
       begin // adding '0' to get ascii code
-        number_strings[0][i] = game_data_i_score[i] + 7'h30;
-        number_strings[1][i] = game_data_i_lines[i] + 7'h30;
-        number_strings[2][i] = game_data_i_level[i] + 7'h30;
+        number_strings[0][i] = gd_score[i] + 7'h30;
+        number_strings[1][i] = gd_lines[i] + 7'h30;
+        number_strings[2][i] = gd_level[i] + 7'h30;
       end
   end
 
@@ -244,7 +250,7 @@ logic [DRAW_TYPES_CNT-1:0] draw_en;
 assign draw_en[ DRAW_STATUS    ] = in_status_strings && rom_rd_data_rev[ in_symbol_x ];
 assign draw_en[ DRAW_HEAD      ] = head_draw_pix && head_draw_pix_en;
 assign draw_en[ DRAW_GAME_OVER ] = game_over_draw_pix && game_over_draw_pix_en &&
-                                   game_over_blink_en && game_data_i_game_over_state;
+                                   game_over_blink_en && gd_game_over_state;
 
 always_comb
   begin

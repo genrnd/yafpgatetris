@@ -3,14 +3,20 @@
 module draw_tetris(
 
   input clk_vga_i,
+
   // game data
-  input game_data_i_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0],
-  input game_data_i_score [5:0][3:0],
-  input game_data_i_lines [5:0][3:0],
-  input game_data_i_level [5:0][3:0],
-  input block_info_t game_data_i_next_block,
-  input game_data_i_next_block_draw_en,
-  input game_data_i_game_over_state,
+  input gd_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0],
+  input gd_score [5:0][3:0],
+  input gd_lines [5:0][3:0],
+  input gd_level [5:0][3:0],
+  input gd_next_block_data [3:0][0:3][0:3],
+  input [`TETRIS_COLORS_WIDTH-1:0] gd_next_block_color,
+  input [1:0] gd_next_block_rotation,
+  input signed [`FIELD_COL_CNT_WIDTH:0] gd_next_block_x,
+  input signed [`FIELD_ROW_CNT_WIDTH:0] gd_next_block_y,
+  input gd_next_block_draw_en,
+  input gd_game_over_state,
+
   // VGA interface
   output logic vga_hs_o,
   output logic vga_vs_o,
@@ -45,13 +51,13 @@ draw_strings #(
   .pix_y_i ( pix_y ),
 
   // game data (passing only apropriate fields of game data)
-  //.game_data_i_field( game_data_i_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0] ),
-  .game_data_i_score( game_data_i_score [5:0][3:0] ),
-  .game_data_i_lines( game_data_i_lines [5:0][3:0] ),
-  .game_data_i_level( game_data_i_level [5:0][3:0] ),
-  //.game_data_i_next_block( game_data_i_next_block ),
-  //.game_data_i_next_block_draw_en( game_data_i_next_block_draw_en ),
-  .game_data_i_game_over_state( game_data_i_game_over_state ),
+  //.gd_field( gd_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0] ),
+  .gd_score( gd_score [5:0][3:0] ),
+  .gd_lines( gd_lines [5:0][3:0] ),
+  .gd_level( gd_level [5:0][3:0] ),
+  //.gd_next_block( gd_next_block ),
+  //.gd_next_block_draw_en( gd_next_block_draw_en ),
+  .gd_game_over_state( gd_game_over_state ),
 
   .vga_data_o ( strings_vga_data_w ),
   .vga_data_en_o ( strings_vga_data_en_w )
@@ -66,13 +72,13 @@ draw_field #(
   .pix_y_i ( pix_y ),
 
   // game data (passing only apropriate fields of game data)
-  .game_data_i_field( game_data_i_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0] ),
-  //.game_data_i_score( game_data_i_score [5:0][3:0] ),
-  //.game_data_i_lines( game_data_i_lines [5:0][3:0] ),
-  //.game_data_i_level( game_data_i_level [5:0][3:0] ),
-  .game_data_i_next_block( game_data_i_next_block ),
-  .game_data_i_next_block_draw_en( game_data_i_next_block_draw_en ),
-  //.game_data_i_game_over_state( game_data_i_game_over_state ),
+  .gd_field( gd_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0] ),
+  //.gd_score( gd_score [5:0][3:0] ),
+  //.gd_lines( gd_lines [5:0][3:0] ),
+  //.gd_level( gd_level [5:0][3:0] ),
+  .gd_next_block( gd_next_block ),
+  .gd_next_block_draw_en( gd_next_block_draw_en ),
+  //.gd_game_over_state( gd_game_over_state ),
 
   .vga_data_o ( strings_vga_data_w ),
   .vga_data_en_o ( strings_vga_data_en_w )
