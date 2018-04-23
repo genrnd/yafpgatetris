@@ -21,8 +21,8 @@ module draw_field
   input gd_next_block_data [3:0][0:3][0:3],
   input [`TETRIS_COLORS_WIDTH-1:0] gd_next_block_color,
   input [1:0] gd_next_block_rotation,
-  input signed [`FIELD_COL_CNT_WIDTH:0] gd_next_block_x,
-  input signed [`FIELD_ROW_CNT_WIDTH:0] gd_next_block_y,
+  //input signed [`FIELD_COL_CNT_WIDTH:0] gd_next_block_x,
+  //input signed [`FIELD_ROW_CNT_WIDTH:0] gd_next_block_y,
   input gd_next_block_draw_en,
   //input gd_game_over_state,
 
