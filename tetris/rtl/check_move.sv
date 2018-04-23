@@ -1,32 +1,30 @@
 `include "../rtl/defs.vh"
 
 module check_move(
-  input                                                    clk_i,
+    input clk_i,
+    input run_i,
+    input [2:0] req_move_i,
 
-  input                                                    run_i,
+    // block info
+    input b_data [3:0][0:3][0:3],
+    input [`TETRIS_COLORS_WIDTH-1:0] b_color,
+    input [1:0] b_rotation,
+    input signed [`FIELD_COL_CNT_WIDTH:0] b_x,
+    input signed [`FIELD_ROW_CNT_WIDTH:0] b_y,
 
-  input  [2:0]                                             req_move_i,
+    input field_i [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0],
 
-  // block info
-  input logic        [63:0]                                block_i_data,
-  input logic        [`TETRIS_COLORS_WIDTH-1:0]            block_i_color,
-  input logic        [1:0]                                 block_i_rotation,
-  input logic signed [`FIELD_COL_CNT_WIDTH:0]              block_i_x,
-  input logic signed [`FIELD_ROW_CNT_WIDTH:0]              block_i_y,
-
-  input  [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0]  field_i,
-
-  output logic                                             done_o,
-  output logic                                             can_move_o,
-  output logic signed [1:0]                                move_x_o,
-  output logic signed [1:0]                                move_y_o
+    output done_o,
+    output can_move_o,
+    output signed [1:0] move_x_o,
+    output signed [1:0] move_y_o
 );
 
 logic signed [2:0] cur_block_i;
 logic signed [2:0] cur_block_j;
-logic              check_en;
+logic check_en;
 
-logic              last_brick;
+logic last_brick;
 
 assign last_brick = ( cur_block_i == 'd3 ) && ( cur_block_j == 'd3 );
 
@@ -80,8 +78,8 @@ logic signed [`FIELD_ROW_CNT_WIDTH:0] check_field_row;
 logic signed [1:0] x_move;
 logic signed [1:0] y_move;
 
-assign check_field_col = block_i_x + cur_block_j + x_move;
-assign check_field_row = block_i_y + cur_block_i + y_move;
+assign check_field_col = b_x + cur_block_j + x_move;
+assign check_field_row = b_y + cur_block_i + y_move;
 
 assign move_x_o = x_move;
 assign move_y_o = y_move;
@@ -123,22 +121,22 @@ always_ff @( posedge clk_i )
       endcase
     end
 
-logic [0:3][0:3] check_data;
+logic check_data [0:3][0:3];
 
 // block data selectors
-logic bd_sel_high;
+logic [5:0] bd_sel_high;
 assign bd_sel_high[5:0] = ( req_move_i[2:0] == `MOVE_ROTATE ) ?
-            ( (block_i_rotation[1:0]+2'b1) * 16 + 15 ):
-            ( block_i_rotation[1:0] * 16 + 15 );
+            ( (b_rotation[1:0]+2'b1) * 16 + 15 ):
+            ( b_rotation[1:0] * 16 + 15 );
 logic [5:0] bd_sel_low;
 assign bd_sel_low[5:0] = ( req_move_i[2:0] == `MOVE_ROTATE ) ?
-            ( (block_i_rotation[1:0]+2'b1) * 16 ):
-            ( block_i_rotation[1:0] * 16 );
+            ( (b_rotation[1:0]+2'b1) * 16 ):
+            ( b_rotation[1:0] * 16 );
 
 always_ff @( posedge clk_i )
   begin
     if( run_i )
-      check_data <= block_i_data[bd_sel_high[5:0]:bd_sel_low[5:0]];
+      check_data <= b_data[bd_sel_high[5:0]:bd_sel_low[5:0]];
   end
 
 always_ff @( posedge clk_i )

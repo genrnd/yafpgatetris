@@ -1,15 +1,15 @@
 `include "../rtl/defs.vh"
 
 module gen_next_block(
-  input                   clk_i,
-  input                   en_i,
+    input clk_i,
+    input en_i,
 
-  // block info
-  output logic        [63:0]                         next_block_o_data,
-  output logic        [`TETRIS_COLORS_WIDTH-1:0]     next_block_o_color,
-  output logic        [1:0]                          next_block_o_rotation,
-  output logic signed [`FIELD_COL_CNT_WIDTH:0]       next_block_o_x,
-  output logic signed [`FIELD_ROW_CNT_WIDTH:0]       next_block_o_y
+    // block info
+    output b_data [3:0][0:3][0:3],
+    output [`TETRIS_COLORS_WIDTH-1:0] b_color,
+    output [1:0] b_rotation,
+    output signed [`FIELD_COL_CNT_WIDTH:0] b_x,
+    output signed [`FIELD_ROW_CNT_WIDTH:0] b_y
 );
 
 localparam BLOCK_I = 0;
@@ -21,7 +21,7 @@ localparam BLOCK_T = 5;
 localparam BLOCK_Z = 6;
 localparam BLOCKS_CNT = 7;
 
-logic [(BLOCKS_CNT*64-1):0] blocks_table;
+logic blocks_table [BLOCKS_CNT-1:0][3:0][0:3][0:3];
 
 /* **** */
 assign blocks_table[ BLOCK_I ] = { 4'b0000,
@@ -189,13 +189,13 @@ always_ff @( posedge clk_i )
 
 always_ff @( posedge clk_i )
   begin
-    next_block_o_data     <= blocks_table[ random_block_num ];
+    b_data <= blocks_table[ random_block_num ];
 
     // zero color for background, so adding one
-    next_block_o_color    <= random_block_num + 1'd1;
-    next_block_o_rotation <= random_rotation;
-    next_block_o_x        <= 'd4;
-    next_block_o_y        <= 'd0;
+    b_color <= random_block_num + 1'd1;
+    b_rotation <= random_rotation;
+    b_x <= 'd4;
+    b_y <= 'd0;
   end
 
 

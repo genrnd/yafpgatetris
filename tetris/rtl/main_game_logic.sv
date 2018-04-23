@@ -1,25 +1,24 @@
 `include "../rtl/defs.vh"
 
-module main_game_logic
-(
-  input clk_i,
-  input rst_i,
-  input [2:0] user_event_i,
-  input user_event_ready_i,
-  output user_event_rd_req_o,
+module main_game_logic (
+    input clk_i,
+    input rst_i,
+    input [2:0] user_event_i,
+    input user_event_ready_i,
+    output user_event_rd_req_o,
 
-  // game data
-  output gd_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0],
-  output gd_score [5:0][3:0],
-  output gd_lines [5:0][3:0],
-  output gd_level [5:0][3:0],
-  output gd_next_block_data [3:0][0:3][0:3],
-  output [`TETRIS_COLORS_WIDTH-1:0] gd_next_block_color,
-  output [1:0] gd_next_block_rotation,
-  output signed [`FIELD_COL_CNT_WIDTH:0] gd_next_block_x,
-  output signed [`FIELD_ROW_CNT_WIDTH:0] gd_next_block_y,
-  output gd_next_block_draw_en,
-  output gd_game_over_state
+    // game data
+    output gd_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0],
+    output gd_score [5:0][3:0],
+    output gd_lines [5:0][3:0],
+    output gd_level [5:0][3:0],
+    output gd_next_block_data [3:0][0:3][0:3],
+    output [`TETRIS_COLORS_WIDTH-1:0] gd_next_block_color,
+    output [1:0] gd_next_block_rotation,
+    output signed [`FIELD_COL_CNT_WIDTH:0] gd_next_block_x,
+    output signed [`FIELD_ROW_CNT_WIDTH:0] gd_next_block_y,
+    output gd_next_block_draw_en,
+    output gd_game_over_state
 
 );
 
@@ -32,34 +31,32 @@ logic field_shifted [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0][`TETRIS_COL
 // current block
 logic field_with_cur_block [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0];
 
-//logic [0:3][0:3]   cur_block_data;
-
 // next block info
-input logic        [63:0]                      next_block_data;
-input logic        [`TETRIS_COLORS_WIDTH-1:0]  next_block_color;
-input logic        [1:0]                       next_block_rotation;
-input logic signed [`FIELD_COL_CNT_WIDTH:0]    next_block_x;
-input logic signed [`FIELD_ROW_CNT_WIDTH:0]    next_block_y;
+logic next_block_data [3:0][0:3][0:3];
+logic [`TETRIS_COLORS_WIDTH-1:0] next_block_color;
+logic [1:0] next_block_rotation;
+logic signed [`FIELD_COL_CNT_WIDTH:0] next_block_x;
+logic signed [`FIELD_ROW_CNT_WIDTH:0] next_block_y;
 
 // current block info
-input logic        [63:0]                      cur_block_data;
-input logic        [`TETRIS_COLORS_WIDTH-1:0]  cur_block_color;
-input logic        [1:0]                       cur_block_rotation;
-input logic signed [`FIELD_COL_CNT_WIDTH:0]    cur_block_x;
-input logic signed [`FIELD_ROW_CNT_WIDTH:0]    cur_block_y;
+logic cur_block_data [3:0][0:3][0:3];
+logic [`TETRIS_COLORS_WIDTH-1:0] cur_block_color;
+logic [1:0] cur_block_rotation;
+logic signed [`FIELD_COL_CNT_WIDTH:0] cur_block_x;
+logic signed [`FIELD_ROW_CNT_WIDTH:0] cur_block_y;
 
-logic              cur_block_draw_en;
+logic cur_block_draw_en;
 
-logic              sys_event;
+logic sys_event;
 
-logic              check_move_run;
-logic              check_move_done;
-logic              can_move;
+logic check_move_run;
+logic check_move_done;
+logic can_move;
 logic signed [1:0] move_x;
 logic signed [1:0] move_y;
 
-logic [2:0]        req_move;
-logic [2:0]        next_req_move;
+logic [2:0] req_move;
+logic [2:0] next_req_move;
 
 logic [`FIELD_ROW_CNT-1:0]         full_row;
 logic [$clog2(`FIELD_ROW_CNT)-1:0] full_row_num;
@@ -148,7 +145,6 @@ always_comb
       end
   end
 
-assign cur_block_data = cur_block.data[ cur_block.rotation ];
 
 always_comb
   begin
@@ -160,8 +156,8 @@ always_comb
           begin
             for( int j = 0; j < 4; j++ )
               begin
-                if( cur_block_data[i][j] )
-                  field_with_cur_block[ cur_block.y + i ][ cur_block.x + j ] = cur_block.color;
+                if( cur_block_data[cur_block_rotation][i][j] )
+                  field_with_cur_block[ cur_block_y + i ][ cur_block_x + j ] = cur_block_color;
               end
           end
       end
@@ -314,7 +310,12 @@ always_comb
 always_ff @( posedge clk_i or posedge rst_i )
   if( rst_i )
     begin
-      cur_block         <= '0;
+      cur_block_data <= '0;
+      cur_block_color <= '0;
+      cur_block_rotation <= '0;
+      cur_block_x <= '0;
+      cur_block_y <= '0;
+
       cur_block_draw_en <= 1'b0;
     end
   else
@@ -334,8 +335,8 @@ always_ff @( posedge clk_i or posedge rst_i )
         begin
           if( can_move )
             begin
-              cur_block.x    <= cur_block.x + move_x;
-              cur_block.y    <= cur_block.y + move_y;
+              cur_block_x <= cur_block_x + move_x;
+              cur_block_y <= cur_block_y + move_y;
 
               if( req_move[2:0] == `MOVE_APPEAR )
                 begin
@@ -344,7 +345,7 @@ always_ff @( posedge clk_i or posedge rst_i )
 
               if( req_move[2:0] == `MOVE_ROTATE )
                 begin
-                  cur_block.rotation <= cur_block.rotation + 1'd1;
+                  cur_block_rotation <= cur_block_rotation + 1'd1;
                 end
             end
         end
@@ -377,25 +378,22 @@ always_comb
 assign check_move_run = ( state != `STATE_CHECK_MOVE ) && ( next_state == `STATE_CHECK_MOVE );
 
 check_move check_move(
-  .clk_i                                  ( clk_i             ),
+    .clk_i( clk_i ),
+    .run_i( check_move_run ),
+    .req_move_i( next_req_move[2:0] ),
 
-  .run_i                                  ( check_move_run    ),
+    // block info output
+    .b_data( cur_block_data ),
+    .b_color( cur_block_color ),
+    .b_rotation( cur_block_rotation ),
+    .b_x( cur_block_x ),
+    .b_y( cur_block_y ),
 
-  .req_move_i                             ( next_req_move[2:0]),
-
-  // block info
-  .block_i_data                           ( cur_block_data    ),
-  .block_i_color                          ( cur_block_color   ),
-  .block_i_rotation                       ( cur_block_rotation),
-  .block_i_x                              ( cur_block_x       ),
-  .block_i_y                              ( cur_block_y       ),
-
-  .field_i                                ( field             ),
-
-  .done_o                                 ( check_move_done   ),
-  .can_move_o                             ( can_move          ),
-  .move_x_o                               ( move_x            ),
-  .move_y_o                               ( move_y            )
+    .field_i( field ),
+    .done_o( check_move_done ),
+    .can_move_o( can_move ),
+    .move_x_o( move_x ),
+    .move_y_o( move_y )
 );
 
 
@@ -421,56 +419,53 @@ always_comb
 
 logic stat_srst;
 
-assign stat_srst = ( state == `STATE_NEW_GAME ) && ( next_state != STATE_NEW_GAME );
+assign stat_srst = ( state == `STATE_NEW_GAME ) && ( next_state != `STATE_NEW_GAME );
 
 logic level_changed;
 
 tetris_stat stat(
-  .clk_i                                  ( clk_i                  ),
+    .clk_i( clk_i ),
 
-  // sync reset - when starts new game
-  .srst_i                                 ( stat_srst              ),
+    // sync reset - when starts new game
+    .srst_i( stat_srst ),
 
-  .disappear_lines_cnt_i                  ( disappear_lines_cnt    ),
-  .update_stat_en_i                       ( check_lines_first_tick ),
+    .disappear_lines_cnt_i( disappear_lines_cnt ),
+    .update_stat_en_i( check_lines_first_tick ),
 
-  .score_o                                ( gd_score      ),
-  .lines_o                                ( gd_lines      ),
-  .level_o                                ( gd_level      ),
+    .score_o( gd_score ),
+    .lines_o( gd_lines ),
+    .level_o( gd_level ),
 
-  .level_changed_o                        ( level_changed          )
+    .level_changed_o( level_changed )
 );
 
 
 logic gen_next_block_en;
 
-assign gen_next_block_en = ( state == STATE_IDLE          ) ||
-                           ( state == STATE_GEN_NEW_BLOCK );
+assign gen_next_block_en = ( state == `STATE_IDLE          ) ||
+                           ( state == `STATE_GEN_NEW_BLOCK );
 
 gen_next_block gen_next_block(
-  .clk_i                                  ( clk_i                     ),
-  .en_i                                   ( gen_next_block_en         ),
+    .clk_i( clk_i ),
+    .en_i( gen_next_block_en ),
 
-    // block info
-  .next_block_o_data                      ( next_block_data    ),
-  .next_block_o_color                     ( next_block_color   ),
-  .next_block_o_rotation                  ( next_block_rotation),
-  .next_block_o_x                         ( next_block_x       ),
-  .next_block_o_y                         ( next_block_y       )
+    // block info input
+    .b_data( next_block_data ),
+    .b_color( next_block_color ),
+    .b_rotation( next_block_rotation ),
+    .b_x( next_block_x ),
+    .b_y( next_block_y )
 );
 
 logic sys_event_srst;
 
-assign sys_event_srst = ( state == STATE_NEW_GAME ) && ( next_state != STATE_NEW_GAME );
+assign sys_event_srst = ( state == `STATE_NEW_GAME ) && ( next_state != `STATE_NEW_GAME );
 
 gen_sys_event gen_sys_event(
-  .clk_i                                  ( clk_i             ),
-  .srst_i                                 ( sys_event_srst    ),
-
-  .level_changed_i                        ( level_changed     ),
-
-  .sys_event_o                            ( sys_event         )
-
+    .clk_i( clk_i ),
+    .srst_i( sys_event_srst ),
+    .level_changed_i( level_changed ),
+    .sys_event_o( sys_event )
 );
 
 // synthesis translate_off

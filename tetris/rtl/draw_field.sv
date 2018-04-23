@@ -1,86 +1,78 @@
-/*
-  Модуль занимается тем, что "отрисовывает" поле игры.
-
-*/
-
 `include "../rtl/defs.vh"
 
-module draw_field
-#(
-  parameter PIX_WIDTH = 12
+module draw_field #(
+    parameter PIX_WIDTH = 12
 )(
-  input clk_i,
-  input [PIX_WIDTH-1:0] pix_x_i,
-  input [PIX_WIDTH-1:0]  pix_y_i,
+    input clk_i,
+    input [PIX_WIDTH-1:0] pix_x_i,
+    input [PIX_WIDTH-1:0] pix_y_i,
 
-  // game data (passing only apropriate fields of game data)
-  input gd_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0],
-  //input gd_score [5:0][3:0],
-  //input gd_lines [5:0][3:0],
-  //input gd_level [5:0][3:0],
-  input gd_next_block_data [3:0][0:3][0:3],
-  input [`TETRIS_COLORS_WIDTH-1:0] gd_next_block_color,
-  input [1:0] gd_next_block_rotation,
-  //input signed [`FIELD_COL_CNT_WIDTH:0] gd_next_block_x,
-  //input signed [`FIELD_ROW_CNT_WIDTH:0] gd_next_block_y,
-  input gd_next_block_draw_en,
-  //input gd_game_over_state,
+    // game data (passing only apropriate fields of game data)
+    input gd_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0],
+    //input gd_score [5:0][3:0],
+    //input gd_lines [5:0][3:0],
+    //input gd_level [5:0][3:0],
+    input gd_next_block_data [3:0][0:3][0:3],
+    input [`TETRIS_COLORS_WIDTH-1:0] gd_next_block_color,
+    input [1:0] gd_next_block_rotation,
+    //input signed [`FIELD_COL_CNT_WIDTH:0] gd_next_block_x,
+    //input signed [`FIELD_ROW_CNT_WIDTH:0] gd_next_block_y,
+    input gd_next_block_draw_en,
+    //input gd_game_over_state,
 
-  // выходные данные RGB
-  output [23:0] vga_data_o,
-  output        vga_data_en_o
+    output [23:0] vga_data_o,
+    output        vga_data_en_o
 );
 
-// значения X и Y для одного блока в значениях реальных пикселей
+// brick size in real onscreen pixels
 localparam BRICK_X = 30;
 localparam BRICK_Y = 30;
 
-// значения для границ в реальных пикселях
+// borders size in real onscreen pixels
 localparam BORDER_X = 2;
 localparam BORDER_Y = 2;
 
-// значение координат ( в реальных пикселях ) когда начинается игровое поле
+// main field start in real onscreen pixels
 localparam START_MAIN_FIELD_X = 300;
 localparam START_MAIN_FIELD_Y = 200;
 
 logic [$clog2(`FIELD_COL_CNT)-1:0] main_field_col_num;
 logic [$clog2(`FIELD_ROW_CNT)-1:0] main_field_row_num;
-logic                              main_field_in_field;
-logic                              main_field_in_brick;
-logic [PIX_WIDTH-1:0]              main_field_end_x;
-logic [PIX_WIDTH-1:0]              main_field_end_y;
+logic main_field_in_field;
+logic main_field_in_brick;
+logic [PIX_WIDTH-1:0] main_field_end_x;
+logic [PIX_WIDTH-1:0] main_field_end_y;
 
 
-draw_field_helper
-#(
-  .PIX_WIDTH                              ( PIX_WIDTH         ),
+draw_field_helper #(
+  .PIX_WIDTH( PIX_WIDTH ),
 
-  .BRICK_X                                ( BRICK_X           ),
-  .BRICK_Y                                ( BRICK_Y           ),
+  .BRICK_X( BRICK_X ),
+  .BRICK_Y( BRICK_Y ),
 
-  .BRICK_X_CNT                            ( `FIELD_COL_CNT    ),
-  .BRICK_Y_CNT                            ( `FIELD_ROW_CNT    ),
+  .BRICK_X_CNT( `FIELD_COL_CNT),
+  .BRICK_Y_CNT( `FIELD_ROW_CNT),
 
-  .BORDER_X                               ( BORDER_X          ),
-  .BORDER_Y                               ( BORDER_Y          )
+  .BORDER_X( BORDER_X ),
+  .BORDER_Y( BORDER_Y )
 ) main_field (
-  .clk_i                                  ( clk_i             ),
+  .clk_i( clk_i ),
 
-  .start_x_i                              ( START_MAIN_FIELD_X ),
-  .start_y_i                              ( START_MAIN_FIELD_Y ),
+  .start_x_i( START_MAIN_FIELD_X ),
+  .start_y_i( START_MAIN_FIELD_Y ),
 
-  .end_x_o                                ( main_field_end_x  ),
-  .end_y_o                                ( main_field_end_y  ),
+  .end_x_o( main_field_end_x  ),
+  .end_y_o( main_field_end_y  ),
 
-    // current pix value
-  .pix_x_i                                ( pix_x_i           ),
-  .pix_y_i                                ( pix_y_i           ),
+  // current pix value
+  .pix_x_i( pix_x_i ),
+  .pix_y_i( pix_y_i ),
 
-  .in_field_o                             ( main_field_in_field ),
-  .in_brick_o                             ( main_field_in_brick ),
+  .in_field_o( main_field_in_field ),
+  .in_brick_o( main_field_in_brick ),
 
-  .brick_col_num_o                        ( main_field_col_num  ),
-  .brick_row_num_o                        ( main_field_row_num  )
+  .brick_col_num_o( main_field_col_num ),
+  .brick_row_num_o( main_field_row_num )
 
 );
 
@@ -93,48 +85,46 @@ logic [PIX_WIDTH-1:0] nbp_field_start_y;
 assign nbp_field_start_x = 'd670;
 assign nbp_field_start_y = START_MAIN_FIELD_Y;
 
-logic [$clog2(NBP_BRICK_CNT)-1:0]  nbp_field_col_num;
-logic [$clog2(NBP_BRICK_CNT)-1:0]  nbp_field_row_num;
-logic                              nbp_field_in_field;
-logic                              nbp_field_in_brick;
+logic [$clog2(NBP_BRICK_CNT)-1:0] nbp_field_col_num;
+logic [$clog2(NBP_BRICK_CNT)-1:0] nbp_field_row_num;
+logic nbp_field_in_field;
+logic nbp_field_in_brick;
 
 draw_field_helper
 #(
-  .PIX_WIDTH                              ( PIX_WIDTH         ),
+    .PIX_WIDTH( PIX_WIDTH ),
 
-  .BRICK_X                                ( BRICK_X           ),
-  .BRICK_Y                                ( BRICK_Y           ),
+    .BRICK_X( BRICK_X ),
+    .BRICK_Y( BRICK_Y ),
 
+    .BRICK_X_CNT( NBP_BRICK_CNT ),
+    .BRICK_Y_CNT( NBP_BRICK_CNT ),
 
-  .BRICK_X_CNT                            ( NBP_BRICK_CNT     ),
-  .BRICK_Y_CNT                            ( NBP_BRICK_CNT     ),
-
-  .BORDER_X                               ( BORDER_X          ),
-  .BORDER_Y                               ( BORDER_Y          )
+    .BORDER_X( BORDER_X ),
+    .BORDER_Y( BORDER_Y )
 ) draw_nbp_field (
-  .clk_i                                  ( clk_i             ),
+    .clk_i( clk_i ),
 
-  .start_x_i                              ( nbp_field_start_x ),
-  .start_y_i                              ( nbp_field_start_y ),
+    .start_x_i( nbp_field_start_x ),
+    .start_y_i( nbp_field_start_y ),
 
-  .end_x_o                                (                   ),
-  .end_y_o                                (                   ),
+    .end_x_o( ),
+    .end_y_o( ),
 
     // current pix value
-  .pix_x_i                                ( pix_x_i           ),
-  .pix_y_i                                ( pix_y_i           ),
+    .pix_x_i( pix_x_i ),
+    .pix_y_i( pix_y_i ),
 
-  .in_field_o                             ( nbp_field_in_field ),
-  .in_brick_o                             ( nbp_field_in_brick ),
+    .in_field_o( nbp_field_in_field ),
+    .in_brick_o( nbp_field_in_brick ),
 
-  .brick_col_num_o                        ( nbp_field_col_num  ),
-  .brick_row_num_o                        ( nbp_field_row_num  )
+    .brick_col_num_o( nbp_field_col_num ),
+    .brick_row_num_o( nbp_field_row_num )
 
 );
 
-logic [NBP_BRICK_CNT-1:0][NBP_BRICK_CNT-1:0][`TETRIS_COLORS_CNT-1:0] nbp_field;
-
-logic [0:3][0:3] nbp_block_data;
+logic nbp_field [NBP_BRICK_CNT-1:0][NBP_BRICK_CNT-1:0][`TETRIS_COLORS_CNT-1:0];
+logic nbp_block_data [0:3][0:3];
 
 assign nbp_block_data = gd_next_block_data[ gd_next_block_rotation ];
 
@@ -162,7 +152,7 @@ always_comb
 
 logic [23:0] vga_data;
 
-logic [`TETRIS_COLORS_CNT-1:0][23:0] vga_colors_pos;
+logic vga_colors_pos [`TETRIS_COLORS_CNT-1:0][23:0];
 
 assign vga_colors_pos[0] = `COLOR_BRICKS_0;
 assign vga_colors_pos[1] = `COLOR_BRICKS_1;
@@ -194,7 +184,7 @@ always_comb
         end
   end
 
-assign vga_data_o    = vga_data;
+assign vga_data_o = vga_data;
 assign vga_data_en_o = main_field_in_field || nbp_field_in_field;
 
 endmodule
