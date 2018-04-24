@@ -9,16 +9,10 @@ module draw_field #(
 
     // game data (passing only apropriate fields of game data)
     input [`FIELD_ROW_CNT*`FIELD_COL_CNT*`TETRIS_COLORS_WIDTH-1:0] gd_field,
-    //input [6*4-1:0] gd_score,
-    //input [6*4-1:0] gd_lines,
-    //input [6*4-1:0] gd_level,
     input [4*4*4-1:0] gd_next_block_data,
     input [`TETRIS_COLORS_WIDTH-1:0] gd_next_block_color,
     input [1:0] gd_next_block_rotation,
-    //input signed [`FIELD_COL_CNT_WIDTH:0] gd_next_block_x,
-    //input signed [`FIELD_ROW_CNT_WIDTH:0] gd_next_block_y,
     input gd_next_block_draw_en,
-    //input gd_game_over_state,
 
     output [23:0] vga_data_o,
     output vga_data_en_o

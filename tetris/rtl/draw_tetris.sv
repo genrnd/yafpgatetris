@@ -47,21 +47,14 @@ draw_strings #(
    .PIX_WIDTH( PIX_WIDTH )
 ) draw_strings1 (
 
-    .clk_i ( clk_vga ),
-    .pix_x_i ( pix_x ),
-    .pix_y_i ( pix_y ),
+    .clk( clk_vga ),
+    .pix_x_i( pix_x ),
+    .pix_y_i( pix_y ),
 
     // game data (passing only apropriate fields of game data)
-    //.gd_field( gd_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0] ),
     .gd_score( gd_score ),
     .gd_lines( gd_lines ),
     .gd_level( gd_level ),
-    //.gd_next_block_data( gd_next_block_data ),
-    //.gd_next_block_color( gd_next_block_color ),
-    //.gd_next_block_rotation( gd_next_block_rotation ),
-    //.gd_next_block_x( gd_next_block_x ),
-    //.gd_next_block_y( gd_next_block_y ),
-    //.gd_next_block_draw_en( gd_next_block_draw_en ),
     .gd_game_over_state( gd_game_over_state ),
 
     .vga_data_o ( strings_vga_data_w ),
@@ -72,22 +65,16 @@ draw_field #(
     .PIX_WIDTH( PIX_WIDTH )
 ) draw_field1 (
 
-    .clk_i ( clk_vga ),
-    .pix_x_i ( pix_x ),
-    .pix_y_i ( pix_y ),
+    .clk( clk_vga ),
+    .pix_x_i( pix_x ),
+    .pix_y_i( pix_y ),
 
     // game data (passing only apropriate fields of game data)
     .gd_field( gd_field ),
-    //.gd_score( gd_score [5:0][3:0] ),
-    //.gd_lines( gd_lines [5:0][3:0] ),
-    //.gd_level( gd_level [5:0][3:0] ),
     .gd_next_block_data( gd_next_block_data ),
     .gd_next_block_color( gd_next_block_color ),
     .gd_next_block_rotation( gd_next_block_rotation ),
-    //.gd_next_block_x( gd_next_block_x ),
-    //.gd_next_block_y( gd_next_block_y ),
     .gd_next_block_draw_en( gd_next_block_draw_en ),
-    //.gd_game_over_state( gd_game_over_state ),
 
     .vga_data_o ( strings_vga_data_w ),
     .vga_data_en_o ( strings_vga_data_en_w )

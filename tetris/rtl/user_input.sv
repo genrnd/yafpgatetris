@@ -1,52 +1,45 @@
 `include "defs.vh"
 
 module user_input(
-  input               rst_i,
-
-  input               ps2_clk_i,
-
-  input         [7:0] ps2_key_data_i,
-  input               ps2_key_data_en_i,
-
-  input               main_logic_clk_i,
-
-  input               user_event_rd_req_i,
-  output        [2:0] user_event_o,
-  output              user_event_ready_o
-
+  input rst,
+  input ps2_clk,
+  input [7:0] ps2_key_data_i,
+  input ps2_key_data_en_i,
+  input main_logic_clk_i,
+  input user_event_rd_req_i,
+  output [2:0] user_event_o,
+  output user_event_ready_o
 );
 
-logic [1:0][7:0] ps2_key_data_sr;
-logic            ps2_key_data_en_d1;
+logic [2*8-1:0] ps2_key_data_sr;
+logic ps2_key_data_en_d1;
 
-always_ff @( posedge ps2_clk_i or posedge rst_i )
-  if( rst_i )
-    begin
-      ps2_key_data_sr <= '0;
-    end
+always_ff @( posedge ps2_clk or posedge rst ) begin
+  if ( rst )
+      ps2_key_data_sr <= 0;
   else
     if( ps2_key_data_en_i )
-      begin
-        ps2_key_data_sr <= { ps2_key_data_sr[0], ps2_key_data_i };
-      end
+        ps2_key_data_sr[15:0] <= { ps2_key_data_sr[7:0], ps2_key_data_i };
+end
 
-always_ff @( posedge ps2_clk_i or posedge rst_i )
-  if( rst_i )
-    ps2_key_data_en_d1 <= '0;
+always_ff @( posedge ps2_clk or posedge rst ) begin
+  if( rst )
+    ps2_key_data_en_d1 <= 0;
   else
     ps2_key_data_en_d1 <= ps2_key_data_en_i;
+end
 
-logic [2:0]  wr_event;
-logic        wr_event_val;
-logic        break_event;
+logic [2:0] wr_event;
+logic wr_event_val;
+logic break_event;
 
-assign break_event = ( ps2_key_data_sr[1] == 8'hF0 );
+assign break_event = ( ps2_key_data_sr[15:8] == 8'hF0 );
 
 always_comb
   begin
     wr_event_val = 1'b1;
 
-    casex( ps2_key_data_sr )
+    casex( ps2_key_data_sr[15:0] )
       { 8'hxx, `SCAN_CODE_N }:
         begin
           wr_event[2:0] = `EV_NEW_GAME;
@@ -83,22 +76,18 @@ logic fifo_full;
 
 assign fifo_wr_req = wr_event_val && ps2_key_data_en_d1 && ( !fifo_full );
 
-user_input_fifo
-#(
-  .DWIDTH                                 ( 3 						 ) // width of event vector
-) user_input_fifo (
-  .aclr                                   ( rst_i               ),
-
-  .wrclk                                  ( ps2_clk_i           ),
-  .wrreq                                  ( fifo_wr_req         ),
-  .data                                   ( wr_event[2:0]       ),
-
-  .rdclk                                  ( main_logic_clk_i    ),
-  .rdreq                                  ( user_event_rd_req_i ),
-  .q                                      ( user_event_o[2:0]   ),
-
-  .rdempty                                ( fifo_empty          ),
-  .wrfull                                 ( fifo_full           )
+user_input_fifo #(
+  .DWIDTH( 3 )      // width of event vector
+) user_input_fifo1 (
+  .aclr( rst ),
+  .wrclk( ps2_clk ),
+  .wrreq( fifo_wr_req ),
+  .data( wr_event[2:0] ),
+  .rdclk( main_logic_clk_i ),
+  .rdreq( user_event_rd_req_i ),
+  .q( user_event_o[2:0] ),
+  .rdempty( fifo_empty ),
+  .wrfull( fifo_full )
 );
 
 assign user_event_ready_o = !fifo_empty;

@@ -1,44 +1,6 @@
-# -------------------------------------------------------------------------- #
-#
-# Copyright (C) 1991-2014 Altera Corporation. All rights reserved.
-# Your use of Altera Corporation's design tools, logic functions
-# and other software and tools, and its AMPP partner logic
-# functions, and any output files from any of the foregoing
-# (including device programming or simulation files), and any
-# associated documentation or information are expressly subject
-# to the terms and conditions of the Altera Program License
-# Subscription Agreement, the Altera Quartus II License Agreement,
-# the Altera MegaCore Function License Agreement, or other
-# applicable license agreement, including, without limitation,
-# that your use is for the sole purpose of programming logic
-# devices manufactured by Altera and sold by Altera or its
-# authorized distributors.  Please refer to the applicable
-# agreement for further details.
-#
-# -------------------------------------------------------------------------- #
-#
-# Quartus II 64-Bit
-# Version 14.1.0 Build 186 12/03/2014 SJ Full Version
-# Date created = 19:27:23  December 27, 2014
-#
-# -------------------------------------------------------------------------- #
-#
-# Notes:
-#
-# 1) The default values for assignments are stored in the file:
-#		yafpgatetris_assignment_defaults.qdf
-#    If this file doesn't exist, see file:
-#		assignment_defaults.qdf
-#
-# 2) Altera recommends that you do not modify this file. This
-#    file is updated automatically by the Quartus II software
-#    and any changes you make may be lost or overwritten.
-#
-# -------------------------------------------------------------------------- #
-
 
 set_global_assignment -name FAMILY "Cyclone V"
-set_global_assignment -name DEVICE 5CSEBA4U19C8S
+set_global_assignment -name DEVICE 5CGXFC7C7F23C8
 set_global_assignment -name TOP_LEVEL_ENTITY top
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 14.1.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "19:27:23  DECEMBER 27, 2014"
@@ -180,7 +142,12 @@ set_global_assignment -name SYSTEMVERILOG_FILE tetris/rtl/draw_field.sv
 set_global_assignment -name VERILOG_FILE ip_cores/vga/vga_time_generator.v
 set_global_assignment -name VERILOG_FILE megafunctions/pll.v -library pll
 set_global_assignment -name QIP_FILE megafunctions/pll.qip
-set_global_assignment -name SDC_FILE yafpgatetris.sdc
+set_global_assignment -name SDC_FILE yosys-tetris.sdc
 set_global_assignment -name SYSTEMVERILOG_FILE top.sv
 
+
+set_global_assignment -name SOURCE_FILE "yosys-tetris.qsf"
+set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (Verilog)"
+set_global_assignment -name EDA_TIME_SCALE "1 ps" -section_id eda_simulation
+set_global_assignment -name EDA_OUTPUT_DATA_FORMAT "VERILOG HDL" -section_id eda_simulation
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
