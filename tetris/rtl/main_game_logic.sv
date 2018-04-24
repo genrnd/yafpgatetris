@@ -61,25 +61,29 @@ logic [$clog2(`FIELD_ROW_CNT)-1:0] full_row_num;
 
 logic check_lines_first_tick;
 
-int unsigned state, next_state;
+integer state;
+integer next_state;
 
 always_comb begin
-  field_clean = '0;
-  for( int row = 0; row < `FIELD_EXT_ROW_CNT; row++ ) begin
-    for( int col = 0; col < `FIELD_EXT_COL_CNT; col++ ) begin
+  field_clean = 0;
+  integer row;
+  integer col;
+  for( row = 0; row < `FIELD_EXT_ROW_CNT; row++ ) begin
+    for( col = 0; col < `FIELD_EXT_COL_CNT; col++ ) begin
       if( ( col == 0 ) || ( col == ( `FIELD_EXT_COL_CNT - 1 ) ) ||
-                          ( row == ( `FIELD_EXT_ROW_CNT - 1 ) ) )
+                          ( row == ( `FIELD_EXT_ROW_CNT - 1 ) ) ) begin
 field_clean[
 (`TETRIS_COLORS_WIDTH*`FIELD_EXT_COL_CNT*row+`TETRIS_COLORS_WIDTH*col+`TETRIS_COLORS_WIDTH-1):
 (`TETRIS_COLORS_WIDTH*`FIELD_EXT_COL_CNT*row+`TETRIS_COLORS_WIDTH*col+0)
-          ] = 'd1;
+          ] = {`TETRIS_COLORS_WIDTH{1'b1}};
+      end
     end
   end
 end
 
 always_ff @( posedge clk or posedge rst ) begin
   if( rst )
-    field_with_color <= '0;
+    field_with_color <= 0;
   else begin
       case( state )
         `STATE_NEW_GAME:     field_with_color <= field_clean;
@@ -90,26 +94,30 @@ always_ff @( posedge clk or posedge rst ) begin
 end
 
 always_comb begin
-  for( int row = 0; row < `FIELD_EXT_ROW_CNT; row++ ) begin
-    for( int col = 0; col < `FIELD_EXT_COL_CNT; col++ ) begin
+  integer row;
+  integer col;
+  for( row = 0; row < `FIELD_EXT_ROW_CNT; row++ ) begin
+    for( col = 0; col < `FIELD_EXT_COL_CNT; col++ ) begin
         field[`FIELD_EXT_COL_CNT*row+col] = ( field_with_color[
 (`TETRIS_COLORS_WIDTH*`FIELD_EXT_COL_CNT*row+`TETRIS_COLORS_WIDTH*col+`TETRIS_COLORS_WIDTH-1):
 (`TETRIS_COLORS_WIDTH*`FIELD_EXT_COL_CNT*row+`TETRIS_COLORS_WIDTH*col+0)
-                                                              ] != 'd0 );
+                                                              ] != 0 );
     end
   end
 end
 
 always_comb begin
-  for( int row = 0; row < `FIELD_ROW_CNT; row++ ) begin
+  integer row;
+  for( row = 0; row < `FIELD_ROW_CNT; row++ ) begin
     full_row[ row ] = &field[ (`FIELD_COL_CNT*(row+1)+`FIELD_COL_CNT):
                               (`FIELD_COL_CNT*(row+1)+1) ];
   end
 end
 
 always_comb begin
-  full_row_num = '0;
-  for( int row = 0; row < `FIELD_ROW_CNT; row++ ) begin
+  full_row_num = 0;
+  integer row;
+  for( row = 0; row < `FIELD_ROW_CNT; row++ ) begin
       if( full_row[ row ] ) full_row_num = row;
   end
 end
@@ -117,12 +125,13 @@ end
 always_comb begin
   field_shifted = field_with_color;
   if( |full_row ) begin
-    for( int row = 0; row < `FIELD_ROW_CNT; row++ ) begin
+    integer row;
+    for( row = 0; row < `FIELD_ROW_CNT; row++ ) begin
       if( row <= full_row_num ) begin
         if( row == 0 ) begin
           field_shifted[
 (`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(0+1)+`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT+`TETRIS_COLORS_WIDTH-1):
-(`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(0+1)+`TETRIS_COLORS_WIDTH*1+0) ] = '0;
+(`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(0+1)+`TETRIS_COLORS_WIDTH*1+0) ] = 0;
         end else begin
           field_shifted[
 (`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(row+1)+`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT+`TETRIS_COLORS_WIDTH-1):
@@ -139,8 +148,10 @@ end
 always_comb begin
   field_with_cur_block = field_with_color;
   if( cur_block_draw_en ) begin
-    for( int i = 0; i < 4; i++ ) begin
-      for( int j = 0; j < 4; j++ ) begin
+    integer i;
+    integer j;
+    for( i = 0; i < 4; i++ ) begin
+      for( j = 0; j < 4; j++ ) begin
         if( cur_block_data[ (4*4*cur_block_rotation)+4*i+j ] )
           field_with_cur_block[
 (`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(cur_block_y+i)+`TETRIS_COLORS_WIDTH*(cur_block_x+j)+`TETRIS_COLORS_WIDTH-1):
@@ -294,11 +305,11 @@ end
 always_ff @( posedge clk or posedge rst ) begin
   if( rst )
     begin
-      cur_block_data <= '0;
-      cur_block_color <= '0;
-      cur_block_rotation <= '0;
-      cur_block_x <= '0;
-      cur_block_y <= '0;
+      cur_block_data <= 0;
+      cur_block_color <= 0;
+      cur_block_rotation <= 0;
+      cur_block_x <= 0;
+      cur_block_y <= 0;
 
       cur_block_draw_en <= 1'b0;
     end
@@ -337,8 +348,10 @@ always_ff @( posedge clk or posedge rst ) begin
 end
 
 always_comb begin
-  for( int col = 0; col < `FIELD_COL_CNT; col++ ) begin
-    for( int row = 0; row < `FIELD_ROW_CNT; row++ ) begin
+  integer row;
+  integer col;
+  for( col = 0; col < `FIELD_COL_CNT; col++ ) begin
+    for( row = 0; row < `FIELD_ROW_CNT; row++ ) begin
       gd_field [
 (`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(row)+`TETRIS_COLORS_WIDTH*(col)+`TETRIS_COLORS_WIDTH-1):
 (`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(row)+`TETRIS_COLORS_WIDTH*(col)+0)
@@ -385,7 +398,7 @@ check_move check_move(
 
 always_ff @( posedge clk or posedge rst ) begin
   if( rst )
-    check_lines_first_tick <= '0;
+    check_lines_first_tick <= 0;
   else
     check_lines_first_tick <= ( state == `STATE_APPEND_BLOCK ) && ( next_state == `STATE_CHECK_LINES );
 end
@@ -394,7 +407,8 @@ logic [2:0] disappear_lines_cnt;
 
 always_comb begin
   disappear_lines_cnt = 0;
-  for( int row = 0; row < `FIELD_ROW_CNT; row++ ) begin
+  integer row;
+  for( row = 0; row < `FIELD_ROW_CNT; row++ ) begin
     if( full_row[row] ) disappear_lines_cnt = disappear_lines_cnt + 1'd1;
   end
 end

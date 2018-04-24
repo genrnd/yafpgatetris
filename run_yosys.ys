@@ -1,9 +1,9 @@
 read_verilog -sv top.sv
 read_verilog -sv rtl_top.sv
 read_verilog tetris/rtl/defs.vh
+read_verilog -sv tetris/rtl/main_game_logic.sv
 read_verilog -sv tetris/rtl/bin_2_bcd.sv
 read_verilog -sv tetris/rtl/draw_tetris.sv
-read_verilog -sv tetris/rtl/main_game_logic.sv
 read_verilog -sv tetris/rtl/check_move.sv
 read_verilog tetris/rtl/font.mif
 read_verilog tetris/rtl/game_over.mif
