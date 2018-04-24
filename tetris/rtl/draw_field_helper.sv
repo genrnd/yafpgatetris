@@ -27,89 +27,72 @@ module draw_field_helper
 assign end_x_o = start_x_i + BORDER_X * ( BRICK_X_CNT + 1 ) + BRICK_X * BRICK_X_CNT - 1;
 assign end_y_o = start_y_i + BORDER_Y * ( BRICK_Y_CNT + 1 ) + BRICK_Y * BRICK_Y_CNT - 1;
 
-// значения границ, включая для col по X
-logic [BRICK_X_CNT-1:0][PIX_WIDTH-1:0] col_pix_start;
-logic [BRICK_X_CNT-1:0][PIX_WIDTH-1:0] col_pix_end;
+logic [PIX_WIDTH-1:0] col_pix_start [BRICK_X_CNT-1:0];
+logic [PIX_WIDTH-1:0] col_pix_end [BRICK_X_CNT-1:0];
+logic [PIX_WIDTH-1:0] row_pix_start [BRICK_Y_CNT-1:0];
+logic [PIX_WIDTH-1:0] row_pix_end [BRICK_Y_CNT-1:0];
 
-logic [BRICK_Y_CNT-1:0][PIX_WIDTH-1:0] row_pix_start;
-logic [BRICK_Y_CNT-1:0][PIX_WIDTH-1:0] row_pix_end;
+integer i;
 
-genvar g;
-generate
-  for( g = 0; g < BRICK_X_CNT; g++ )
-    begin : g_col_pix
-      assign col_pix_start[g] = ( g + 1 ) * BORDER_X + g * BRICK_X;
-      assign col_pix_end[g]   = col_pix_start[g] + BRICK_X - 1'd1;
-    end
-endgenerate
+always_comb begin
+  for( i = 0; i < BRICK_X_CNT; i++ ) begin
+    col_pix_start[i] = ( i + 1 ) * BORDER_X + i * BRICK_X;
+    col_pix_end[i] = col_pix_start[i] + BRICK_X - 1'd1;
+  end
+end
 
-generate
-  for( g = 0 ; g < BRICK_Y_CNT; g++ )
-    begin : g_row_pix
-      assign row_pix_start[g] = ( g + 1 ) * BORDER_Y + g * BRICK_Y;
-      assign row_pix_end[g]   = row_pix_start[g] + BRICK_Y - 1'd1;
-    end
-endgenerate
+always_comb begin
+  for( i = 0 ; i < BRICK_Y_CNT; i++ ) begin
+    row_pix_start[i] = ( i + 1 ) * BORDER_Y + i * BRICK_Y;
+    row_pix_end[i] = row_pix_start[i] + BRICK_Y - 1'd1;
+  end
+end
 
-// текущие значения
+// current values
 logic [$clog2( BRICK_X_CNT )-1:0] brick_col_num;
 logic [$clog2( BRICK_Y_CNT )-1:0] brick_row_num;
 
-logic                             in_brick_col;
-logic                             in_brick_row;
+logic in_brick_col;
+logic in_brick_row;
 
-// просто смещенные значения
+// shifted values
 logic [PIX_WIDTH-1:0] in_field_pix_x;
 logic [PIX_WIDTH-1:0] in_field_pix_y;
-
 assign in_field_pix_x = pix_x_i - start_x_i;
 assign in_field_pix_y = pix_y_i - start_y_i;
 
-
-// высчитываем текущий блок для отображения
-// сделано не очень оптимально - можно подумать...
-always_comb
-  begin
-    brick_col_num = '0;
-    in_brick_col  = 1'b0;
-
-    for( int i = 0; i < BRICK_X_CNT; i++ )
-      begin
-        if( ( in_field_pix_x >= col_pix_start[i] ) &&
-            ( in_field_pix_x <= col_pix_end[i]   ) )
-          begin
+// processing current block for presenting it
+// not an optimal implementation though
+always_comb begin
+  brick_col_num = 0;
+  in_brick_col  = 1'b0;
+  for( i = 0; i < BRICK_X_CNT; i++ ) begin
+    if( ( in_field_pix_x >= col_pix_start[i] ) &&
+        ( in_field_pix_x <= col_pix_end[i] ) ) begin
             brick_col_num = i;
             in_brick_col  = 1'b1;
-          end
-      end
+    end
   end
+end
 
-always_comb
-  begin
-    brick_row_num = '0;
-    in_brick_row  = 1'b0;
-
-    for( int i = 0; i < BRICK_Y_CNT; i++ )
-      begin
-        if( ( in_field_pix_y >= row_pix_start[i] ) &&
-            ( in_field_pix_y <= row_pix_end[i] ) )
-          begin
+always_comb begin
+  brick_row_num = 0;
+  in_brick_row  = 1'b0;
+  for( i = 0; i < BRICK_Y_CNT; i++ ) begin
+    if( ( in_field_pix_y >= row_pix_start[i] ) &&
+        ( in_field_pix_y <= row_pix_end[i] ) ) begin
             brick_row_num = i;
             in_brick_row  = 1'b1;
-          end
-      end
+    end
   end
+end
 
-always_ff @( posedge clk )
-  begin
+always_ff @( posedge clk ) begin
     in_field_o  <= ( pix_x_i >= start_x_i ) && ( pix_x_i <= end_x_o ) &&
                   ( pix_y_i >= start_y_i ) && ( pix_y_i <= end_y_o );
-
     in_brick_o  <=  in_brick_col && in_brick_row;
-
-
     brick_col_num_o <= brick_col_num;
     brick_row_num_o <= brick_row_num;
-  end
+end
 
 endmodule
