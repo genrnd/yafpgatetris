@@ -5,11 +5,11 @@ module draw_tetris(
     input clk_vga,
 
     // game data
-    input gd_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0],
-    input gd_score [5:0][3:0],
-    input gd_lines [5:0][3:0],
-    input gd_level [5:0][3:0],
-    input gd_next_block_data [3:0][0:3][0:3],
+    input [`FIELD_ROW_CNT*`FIELD_COL_CNT*`TETRIS_COLORS_WIDTH-1:0] gd_field,
+    input [6*4-1:0] gd_score,
+    input [6*4-1:0] gd_lines,
+    input [6*4-1:0] gd_level,
+    input [4*4*4-1:0] gd_next_block_data,
     input [`TETRIS_COLORS_WIDTH-1:0] gd_next_block_color,
     input [1:0] gd_next_block_rotation,
     input signed [`FIELD_COL_CNT_WIDTH:0] gd_next_block_x,
@@ -45,7 +45,7 @@ logic [23:0] vga_data;
 
 draw_strings #(
    .PIX_WIDTH( PIX_WIDTH )
-) draw_strings (
+) draw_strings1 (
 
     .clk_i ( clk_vga ),
     .pix_x_i ( pix_x ),
@@ -70,7 +70,7 @@ draw_strings #(
 
 draw_field #(
     .PIX_WIDTH( PIX_WIDTH )
-) draw_field (
+) draw_field1 (
 
     .clk_i ( clk_vga ),
     .pix_x_i ( pix_x ),
@@ -94,24 +94,17 @@ draw_field #(
 
 );
 
-always_comb
-  begin
+always_comb begin
     vga_data = `COLOR_BACKGROUND;
-
     // strings got priority to draw "game over" over field
     if( strings_vga_data_en_w )
       vga_data = strings_vga_data_w;
     else
       if( field_vga_data_en_w )
         vga_data = field_vga_data_w;
-  end
-
-
-
-// settings for VGA CORE
+end
 
 // for 640x480
-
 /*
 localparam H_DISP	  = 640;
 localparam H_FPORCH   = 16;
@@ -133,7 +126,7 @@ localparam V_FPORCH   = 1;
 localparam V_SYNC	  = 3;
 localparam V_BPORCH   = 38;
 
-vga_time_generator vga_time_generator_instance(
+vga_time_generator vga_time_gen1(
     .clk( clk_vga ),
     .reset_n( 1'b1 ), //FIXME(?)
 
@@ -162,8 +155,7 @@ logic pix_hs_d1;
 logic pix_vs_d1;
 logic pix_de_d1;
 
-always_ff @( posedge clk_vga )
-  begin
+always_ff @( posedge clk_vga ) begin
     { vga_r_o, vga_g_o, vga_b_o } <= vga_data;
 
     // delay because draw_strings/field got latency
@@ -174,6 +166,6 @@ always_ff @( posedge clk_vga )
     vga_hs_o <= pix_hs_d1;
     vga_vs_o <= pix_vs_d1;
     vga_de_o <= pix_de_d1;
-  end
+end
 
 endmodule

@@ -34,7 +34,7 @@ logic user_event_rd_req;
 logic [2:0] user_event;
 logic user_event_ready;
 
-user_input user_input(
+user_input user_input1(
     .rst_i ( ~NRST ),
     .ps2_clk_i ( CLOCK_50 ),
     .ps2_key_data_i ( ps2_received_data ),
@@ -59,7 +59,7 @@ logic gd_next_block_draw_en;
 logic gd_game_over_state;
 
 
-main_game_logic main_logic(
+main_game_logic main_logic1(
     .clk ( VGA_CLK ),
     .rst ( ~NRST ),
     .user_event_i ( user_event[2:0] ),
@@ -81,7 +81,7 @@ main_game_logic main_logic(
 );
 
 
-draw_tetris draw_tetris(
+draw_tetris draw_tetris1(
     .clk_vga( VGA_CLK ),
 
     // game data output

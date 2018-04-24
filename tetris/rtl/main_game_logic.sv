@@ -69,7 +69,7 @@ integer col;
 
 always_comb begin
   field_clean = 0;
-  for( row = 0; row < `FIELD_EXT_ROW_CNT; row = row+1 ) begin
+  for( row = 0; row < `FIELD_EXT_ROW_CNT; row++ ) begin
     for( col = 0; col < `FIELD_EXT_COL_CNT; col++ ) begin
       if( ( col == 0 ) || ( col == ( `FIELD_EXT_COL_CNT - 1 ) ) ||
                           ( row == ( `FIELD_EXT_ROW_CNT - 1 ) ) ) begin
@@ -371,10 +371,10 @@ always_comb
 
 assign check_move_run = ( state != `STATE_CHECK_MOVE ) && ( next_state == `STATE_CHECK_MOVE );
 
-check_move check_move(
+check_move check_move1(
     .clk( clk ),
-    .run_i( check_move_run ),
-    .req_move_i( next_req_move[2:0] ),
+    .run( check_move_run ),
+    .req_move( next_req_move[2:0] ),
 
     // block info output
     .b_data( cur_block_data ),
@@ -383,7 +383,7 @@ check_move check_move(
     .b_x( cur_block_x ),
     .b_y( cur_block_y ),
 
-    .field_i( field ),
+    .field( field ),
     .done_o( check_move_done ),
     .can_move_o( can_move ),
     .move_x_o( move_x ),
@@ -411,7 +411,7 @@ logic stat_srst;
 assign stat_srst = ( state == `STATE_NEW_GAME ) && ( next_state != `STATE_NEW_GAME );
 
 logic level_changed;
-tetris_stat stat(
+tetris_stat stat1(
     .clk( clk ),
 
     // sync reset - when starts new game
@@ -429,9 +429,9 @@ logic gen_next_block_en;
 assign gen_next_block_en = ( state == `STATE_IDLE          ) ||
                            ( state == `STATE_GEN_NEW_BLOCK );
 
-gen_next_block gen_next_block(
+gen_next_block gen_next_block1(
     .clk( clk ),
-    .en_i( gen_next_block_en ),
+    .en( gen_next_block_en ),
 
     // block info input
     .b_data( next_block_data ),
@@ -444,7 +444,7 @@ gen_next_block gen_next_block(
 logic sys_event_srst;
 assign sys_event_srst = ( state == `STATE_NEW_GAME ) && ( next_state != `STATE_NEW_GAME );
 
-gen_sys_event gen_sys_event(
+gen_sys_event gen_sys_event1(
     .clk( clk ),
     .srst( sys_event_srst ),
     .level_changed_i( level_changed ),
