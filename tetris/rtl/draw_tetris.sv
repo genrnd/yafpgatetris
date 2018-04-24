@@ -2,7 +2,7 @@
 
 module draw_tetris(
 
-    input clk_vga_i,
+    input clk_vga,
 
     // game data
     input gd_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0],
@@ -47,7 +47,7 @@ draw_strings #(
    .PIX_WIDTH( PIX_WIDTH )
 ) draw_strings (
 
-    .clk_i ( clk_vga_i ),
+    .clk_i ( clk_vga ),
     .pix_x_i ( pix_x ),
     .pix_y_i ( pix_y ),
 
@@ -72,7 +72,7 @@ draw_field #(
     .PIX_WIDTH( PIX_WIDTH )
 ) draw_field (
 
-    .clk_i ( clk_vga_i ),
+    .clk_i ( clk_vga ),
     .pix_x_i ( pix_x ),
     .pix_y_i ( pix_y ),
 
@@ -134,7 +134,7 @@ localparam V_SYNC	  = 3;
 localparam V_BPORCH   = 38;
 
 vga_time_generator vga_time_generator_instance(
-    .clk( clk_vga_i ),
+    .clk( clk_vga ),
     .reset_n( 1'b1 ), //FIXME(?)
 
     .h_disp( H_DISP ),
@@ -162,7 +162,7 @@ logic pix_hs_d1;
 logic pix_vs_d1;
 logic pix_de_d1;
 
-always_ff @( posedge clk_vga_i )
+always_ff @( posedge clk_vga )
   begin
     { vga_r_o, vga_g_o, vga_b_o } <= vga_data;
 

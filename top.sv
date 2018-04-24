@@ -7,7 +7,7 @@
 
 module top(
     input CLOCK_25,
-    input [9:0] SW,
+    input NRST,
 
     // ps2 interface
     inout PS2_CLK,
@@ -34,7 +34,7 @@ pll pll(
 
 rtl_top rtl_top1(
     .CLOCK_50( CLOCK_50 ),
-    .SW( SW[9:0] ),
+    .NRST( NRST ),
 
     .PS2_CLK( PS2_CLK ),
     .PS2_DAT( PS2_DAT ),

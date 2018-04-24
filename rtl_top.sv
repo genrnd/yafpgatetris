@@ -18,41 +18,39 @@ module rtl_top(
     output VGA_VS
 );
 
-logic [7:0] ps2_received_data_w;
-logic ps2_received_data_en_w;
+logic [7:0] ps2_received_data;
+logic ps2_received_data_en;
 
 PS2_Controller ps2(
     .CLOCK_50 ( CLOCK_50 ),
-    .reset ( NRST ),
-    // Bidirectionals
+    .reset ( ~NRST ),
     .PS2_CLK ( PS2_CLK ),
     .PS2_DAT ( PS2_DAT ),
-    .received_data ( ps2_received_data_w ),
-    .received_data_en ( ps2_received_data_en_w )
+    .received_data ( ps2_received_data ),
+    .received_data_en ( ps2_received_data_en )
 );
 
-logic user_event_rd_req_w;
-logic [2:0] user_event_w;
-logic user_event_ready_w;
+logic user_event_rd_req;
+logic [2:0] user_event;
+logic user_event_ready;
 
 user_input user_input(
-    .rst_i ( NRST ),
+    .rst_i ( ~NRST ),
     .ps2_clk_i ( CLOCK_50 ),
-    .ps2_key_data_i ( ps2_received_data_w ),
-    .ps2_key_data_en_i ( ps2_received_data_en_w ),
+    .ps2_key_data_i ( ps2_received_data ),
+    .ps2_key_data_en_i ( ps2_received_data_en ),
     .main_logic_clk_i ( VGA_CLK ),
-    .user_event_rd_req_i ( user_event_rd_req_w ),
-    .user_event_o ( user_event_w[2:0] ),
-    .user_event_ready_o ( user_event_ready_w )
+    .user_event_rd_req_i ( user_event_rd_req ),
+    .user_event_o ( user_event[2:0] ),
+    .user_event_ready_o ( user_event_ready )
 );
 
 // game data
-// logic gd_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0];
-logic [1000:0][1000:0] gd_field [1000:0];
-logic gd_score [5:0][3:0];
-logic gd_lines [5:0][3:0];
-logic gd_level [5:0][3:0];
-logic gd_next_block_data [3:0][0:3][0:3];
+logic [`FIELD_ROW_CNT*`FIELD_COL_CNT*`TETRIS_COLORS_WIDTH-1:0] gd_field;
+logic [6*4-1:0] gd_score;     // 6 digits by 4 bits
+logic [6*4-1:0] gd_lines;     // 6 digits by 4 bits
+logic [6*4-1:0] gd_level;     // 6 digits by 4 bits
+logic [4*4*4-1:0] gd_next_block_data;   // 4 rotation variants for 4*4 block
 logic [`TETRIS_COLORS_WIDTH-1:0] gd_next_block_color;
 logic [1:0] gd_next_block_rotation;
 logic signed [`FIELD_COL_CNT_WIDTH:0] gd_next_block_x;
@@ -62,11 +60,11 @@ logic gd_game_over_state;
 
 
 main_game_logic main_logic(
-    .clk_i ( VGA_CLK ),
-    .rst_i ( NRST ),
-    .user_event_i ( user_event_w[2:0] ),
-    .user_event_ready_i ( user_event_ready_w ),
-    .user_event_rd_req_o ( user_event_rd_req_w ),
+    .clk ( VGA_CLK ),
+    .rst ( ~NRST ),
+    .user_event_i ( user_event[2:0] ),
+    .user_event_ready_i ( user_event_ready ),
+    .user_event_rd_req_o ( user_event_rd_req ),
 
     // game data input
     .gd_field( gd_field ),
@@ -84,7 +82,7 @@ main_game_logic main_logic(
 
 
 draw_tetris draw_tetris(
-    .clk_vga_i( VGA_CLK ),
+    .clk_vga( VGA_CLK ),
 
     // game data output
     .gd_field( gd_field ),

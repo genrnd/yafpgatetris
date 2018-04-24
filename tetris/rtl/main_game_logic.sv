@@ -1,18 +1,18 @@
 `include "../rtl/defs.vh"
 
 module main_game_logic (
-    input clk_i,
-    input rst_i,
+    input clk,
+    input rst,
     input [2:0] user_event_i,
     input user_event_ready_i,
     output user_event_rd_req_o,
 
     // game data
-    output gd_field [`FIELD_ROW_CNT-1:0][`FIELD_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0],
-    output gd_score [5:0][3:0],
-    output gd_lines [5:0][3:0],
-    output gd_level [5:0][3:0],
-    output gd_next_block_data [3:0][0:3][0:3],
+    output [`FIELD_ROW_CNT*`FIELD_COL_CNT*`TETRIS_COLORS_WIDTH-1:0] gd_field,
+    output [6*4-1:0] gd_score,
+    output [6*4-1:0] gd_lines,
+    output [6*4-1:0] gd_level,
+    output [4*4*4-1:0] gd_next_block_data,
     output [`TETRIS_COLORS_WIDTH-1:0] gd_next_block_color,
     output [1:0] gd_next_block_rotation,
     output signed [`FIELD_COL_CNT_WIDTH:0] gd_next_block_x,
@@ -23,23 +23,21 @@ module main_game_logic (
 );
 
 // game field state
-logic field [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0];
-logic field_with_color [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0];
-logic field_clean [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0];
-logic field_shifted [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0];
-
-// current block
-logic field_with_cur_block [`FIELD_EXT_ROW_CNT-1:0][`FIELD_EXT_COL_CNT-1:0][`TETRIS_COLORS_WIDTH-1:0];
+logic [`FIELD_EXT_ROW_CNT*`FIELD_EXT_COL_CNT-1:0] field;
+logic [`FIELD_EXT_ROW_CNT*`FIELD_EXT_COL_CNT*`TETRIS_COLORS_WIDTH-1:0] field_with_color ;
+logic [`FIELD_EXT_ROW_CNT*`FIELD_EXT_COL_CNT*`TETRIS_COLORS_WIDTH-1:0] field_clean;
+logic [`FIELD_EXT_ROW_CNT*`FIELD_EXT_COL_CNT*`TETRIS_COLORS_WIDTH-1:0] field_shifted;
+logic [`FIELD_EXT_ROW_CNT*`FIELD_EXT_COL_CNT*`TETRIS_COLORS_WIDTH-1:0] field_with_cur_block;
 
 // next block info
-logic next_block_data [3:0][0:3][0:3];
+logic [4*4*4-1:0] next_block_data;
 logic [`TETRIS_COLORS_WIDTH-1:0] next_block_color;
 logic [1:0] next_block_rotation;
 logic signed [`FIELD_COL_CNT_WIDTH:0] next_block_x;
 logic signed [`FIELD_ROW_CNT_WIDTH:0] next_block_y;
 
 // current block info
-logic cur_block_data [3:0][0:3][0:3];
+logic [4*4*4-1:0] cur_block_data;
 logic [`TETRIS_COLORS_WIDTH-1:0] cur_block_color;
 logic [1:0] cur_block_rotation;
 logic signed [`FIELD_COL_CNT_WIDTH:0] cur_block_x;
@@ -58,7 +56,7 @@ logic signed [1:0] move_y;
 logic [2:0] req_move;
 logic [2:0] next_req_move;
 
-logic [`FIELD_ROW_CNT-1:0]         full_row;
+logic [`FIELD_ROW_CNT-1:0] full_row;
 logic [$clog2(`FIELD_ROW_CNT)-1:0] full_row_num;
 
 logic check_lines_first_tick;
@@ -80,8 +78,8 @@ always_comb
       end
   end
 
-always_ff @( posedge clk_i or posedge rst_i )
-  if( rst_i )
+always_ff @( posedge clk or posedge rst )
+  if( rst )
     field_with_color <= '0;
   else
     begin
@@ -190,15 +188,15 @@ always_comb
         end
   end
 
-always_ff @( posedge clk_i or posedge rst_i )
-  if( rst_i )
+always_ff @( posedge clk or posedge rst )
+  if( rst )
     req_move[2:0] <= `MOVE_DOWN;
   else
     if( ( next_state == `STATE_CHECK_MOVE ) && ( state != `STATE_CHECK_MOVE ) )
       req_move[2:0] <= next_req_move[2:0];
 
-always_ff @( posedge clk_i or posedge rst_i )
-  if( rst_i )
+always_ff @( posedge clk or posedge rst )
+  if( rst )
     state <= `STATE_IDLE;
   else
     state <= next_state;
@@ -307,8 +305,8 @@ always_comb
     endcase
   end
 
-always_ff @( posedge clk_i or posedge rst_i )
-  if( rst_i )
+always_ff @( posedge clk or posedge rst )
+  if( rst )
     begin
       cur_block_data <= '0;
       cur_block_color <= '0;
@@ -378,7 +376,7 @@ always_comb
 assign check_move_run = ( state != `STATE_CHECK_MOVE ) && ( next_state == `STATE_CHECK_MOVE );
 
 check_move check_move(
-    .clk_i( clk_i ),
+    .clk( clk ),
     .run_i( check_move_run ),
     .req_move_i( next_req_move[2:0] ),
 
@@ -397,8 +395,8 @@ check_move check_move(
 );
 
 
-always_ff @( posedge clk_i or posedge rst_i )
-  if( rst_i )
+always_ff @( posedge clk or posedge rst )
+  if( rst )
     check_lines_first_tick <= '0;
   else
     check_lines_first_tick <= ( state == `STATE_APPEND_BLOCK ) && ( next_state == `STATE_CHECK_LINES );
@@ -424,10 +422,10 @@ assign stat_srst = ( state == `STATE_NEW_GAME ) && ( next_state != `STATE_NEW_GA
 logic level_changed;
 
 tetris_stat stat(
-    .clk_i( clk_i ),
+    .clk( clk ),
 
     // sync reset - when starts new game
-    .srst_i( stat_srst ),
+    .srst( stat_srst ),
 
     .disappear_lines_cnt_i( disappear_lines_cnt ),
     .update_stat_en_i( check_lines_first_tick ),
@@ -446,7 +444,7 @@ assign gen_next_block_en = ( state == `STATE_IDLE          ) ||
                            ( state == `STATE_GEN_NEW_BLOCK );
 
 gen_next_block gen_next_block(
-    .clk_i( clk_i ),
+    .clk( clk ),
     .en_i( gen_next_block_en ),
 
     // block info input
@@ -462,37 +460,10 @@ logic sys_event_srst;
 assign sys_event_srst = ( state == `STATE_NEW_GAME ) && ( next_state != `STATE_NEW_GAME );
 
 gen_sys_event gen_sys_event(
-    .clk_i( clk_i ),
-    .srst_i( sys_event_srst ),
+    .clk( clk ),
+    .srst( sys_event_srst ),
     .level_changed_i( level_changed ),
     .sys_event_o( sys_event )
 );
-
-// synthesis translate_off
-initial
-  begin
-    forever
-      begin
-        @( posedge clk_i );
-        $write("-------%t-------\n", $time() );
-        for( int row = 0; row < `FIELD_EXT_ROW_CNT; row++ )
-          begin
-            for( int col = 0; col < `FIELD_EXT_COL_CNT; col++ )
-              begin
-                if( ( col == 0 ) || ( col == ( `FIELD_EXT_COL_CNT - 1 ) ) ||
-                                    ( row == ( `FIELD_EXT_ROW_CNT - 1 ) ) )
-                  begin
-                    $write( "*" );
-                  end
-                else
-                  begin
-                    $write( "%h", field_with_cur_block[ row ][ col ] );
-                  end
-              end
-            $write("\n");
-          end
-      end
-  end
-// synthesis translate_on
 
 endmodule
