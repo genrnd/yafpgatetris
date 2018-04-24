@@ -2,23 +2,23 @@ read_verilog -sv top.sv
 read_verilog -sv rtl_top.sv
 read_verilog tetris/rtl/defs.vh
 read_verilog -sv tetris/rtl/main_game_logic.sv
-read_verilog -sv tetris/rtl/bin_2_bcd.sv
 read_verilog -sv tetris/rtl/draw_tetris.sv
 read_verilog -sv tetris/rtl/check_move.sv
-read_verilog tetris/rtl/string_rom.v
-read_verilog -sv tetris/rtl/draw_big_string.sv
 read_verilog -sv tetris/rtl/gen_next_block.sv
 read_verilog -sv tetris/rtl/tetris_stat.sv
-read_verilog -sv tetris/rtl/draw_field_helper.sv
-read_verilog tetris/rtl/user_input_fifo.v
 read_verilog -sv tetris/rtl/draw_field.sv
+read_verilog -sv tetris/rtl/draw_field_helper.sv
+read_verilog -sv tetris/rtl/draw_strings.sv
+read_verilog -sv tetris/rtl/draw_big_string.sv
+read_verilog -sv tetris/rtl/bin_2_bcd.sv
 read_verilog -sv tetris/rtl/gen_sys_event.sv
 read_verilog -sv tetris/rtl/user_input.sv
-read_verilog -sv tetris/rtl/draw_strings.sv
+read_verilog tetris/rtl/user_input_fifo.v
 read_verilog ip_cores/ps2_keyboard/Altera_UP_PS2_Command_Out.v
 read_verilog ip_cores/ps2_keyboard/PS2_Controller.v
 read_verilog ip_cores/ps2_keyboard/Altera_UP_PS2_Data_In.v
 read_verilog ip_cores/vga/vga_time_generator.v
+read_verilog tetris/rtl/string_rom.v
 read_verilog tetris/rtl/head.mif
 read_verilog tetris/rtl/font.mif
 read_verilog tetris/rtl/game_over.mif

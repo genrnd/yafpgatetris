@@ -1,34 +1,26 @@
-module draw_field_helper
-#( 
-  parameter PIX_WIDTH = 12,
 
+module draw_field_helper
+#(
+  parameter PIX_WIDTH = 12,
   parameter BRICK_X   = 20,
   parameter BRICK_Y   = 25,
-
   parameter BRICK_X_CNT = 10,
   parameter BRICK_Y_CNT = 20,
-
   parameter BORDER_X    = 2,
   parameter BORDER_Y    = 2
-)
-(
-  input                                  clk_i,
-
-  input  [PIX_WIDTH-1:0]                 start_x_i,
-  input  [PIX_WIDTH-1:0]                 start_y_i,
-
-  output [PIX_WIDTH-1:0]                 end_x_o,
-  output [PIX_WIDTH-1:0]                 end_y_o,
-
+)(
+  input clk,
+  input [PIX_WIDTH-1:0] start_x_i,
+  input [PIX_WIDTH-1:0] start_y_i,
+  output [PIX_WIDTH-1:0] end_x_o,
+  output [PIX_WIDTH-1:0] end_y_o,
   // current pix value
-  input  [PIX_WIDTH-1:0]                 pix_x_i,
-  input  [PIX_WIDTH-1:0]                 pix_y_i,
-
-  output logic                           in_field_o,
-  output logic                           in_brick_o,
-
-  output logic [$clog2(BRICK_X_CNT)-1:0] brick_col_num_o,
-  output logic [$clog2(BRICK_Y_CNT)-1:0] brick_row_num_o
+  input [PIX_WIDTH-1:0] pix_x_i,
+  input [PIX_WIDTH-1:0] pix_y_i,
+  output in_field_o,
+  output in_brick_o,
+  output [$clog2(BRICK_X_CNT)-1:0] brick_col_num_o,
+  output [$clog2(BRICK_Y_CNT)-1:0] brick_row_num_o
 
 );
 
@@ -66,7 +58,7 @@ logic [$clog2( BRICK_Y_CNT )-1:0] brick_row_num;
 logic                             in_brick_col;
 logic                             in_brick_row;
 
-// просто смещенные значения 
+// просто смещенные значения
 logic [PIX_WIDTH-1:0] in_field_pix_x;
 logic [PIX_WIDTH-1:0] in_field_pix_y;
 
@@ -83,7 +75,7 @@ always_comb
 
     for( int i = 0; i < BRICK_X_CNT; i++ )
       begin
-        if( ( in_field_pix_x >= col_pix_start[i] ) && 
+        if( ( in_field_pix_x >= col_pix_start[i] ) &&
             ( in_field_pix_x <= col_pix_end[i]   ) )
           begin
             brick_col_num = i;
@@ -99,7 +91,7 @@ always_comb
 
     for( int i = 0; i < BRICK_Y_CNT; i++ )
       begin
-        if( ( in_field_pix_y >= row_pix_start[i] ) && 
+        if( ( in_field_pix_y >= row_pix_start[i] ) &&
             ( in_field_pix_y <= row_pix_end[i] ) )
           begin
             brick_row_num = i;
@@ -108,7 +100,7 @@ always_comb
       end
   end
 
-always_ff @( posedge clk_i )
+always_ff @( posedge clk )
   begin
     in_field_o  <= ( pix_x_i >= start_x_i ) && ( pix_x_i <= end_x_o ) &&
                   ( pix_y_i >= start_y_i ) && ( pix_y_i <= end_y_o );
