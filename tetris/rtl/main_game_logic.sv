@@ -413,10 +413,7 @@ assign stat_srst = ( state == `STATE_NEW_GAME ) && ( next_state != `STATE_NEW_GA
 logic level_changed;
 tetris_stat stat1(
     .clk( clk ),
-
-    // sync reset - when starts new game
-    .srst( stat_srst ),
-
+    .srst( stat_srst ),   // sync reset - when starts new game
     .disappear_lines_cnt_i( disappear_lines_cnt ),
     .update_stat_en_i( check_lines_first_tick ),
     .score_o( gd_score ),
