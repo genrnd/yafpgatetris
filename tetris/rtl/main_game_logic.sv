@@ -64,11 +64,12 @@ logic check_lines_first_tick;
 integer state;
 integer next_state;
 
+integer row;
+integer col;
+
 always_comb begin
   field_clean = 0;
-  integer row;
-  integer col;
-  for( row = 0; row < `FIELD_EXT_ROW_CNT; row++ ) begin
+  for( row = 0; row < `FIELD_EXT_ROW_CNT; row = row+1 ) begin
     for( col = 0; col < `FIELD_EXT_COL_CNT; col++ ) begin
       if( ( col == 0 ) || ( col == ( `FIELD_EXT_COL_CNT - 1 ) ) ||
                           ( row == ( `FIELD_EXT_ROW_CNT - 1 ) ) ) begin
@@ -94,8 +95,6 @@ always_ff @( posedge clk or posedge rst ) begin
 end
 
 always_comb begin
-  integer row;
-  integer col;
   for( row = 0; row < `FIELD_EXT_ROW_CNT; row++ ) begin
     for( col = 0; col < `FIELD_EXT_COL_CNT; col++ ) begin
         field[`FIELD_EXT_COL_CNT*row+col] = ( field_with_color[
@@ -107,7 +106,6 @@ always_comb begin
 end
 
 always_comb begin
-  integer row;
   for( row = 0; row < `FIELD_ROW_CNT; row++ ) begin
     full_row[ row ] = &field[ (`FIELD_COL_CNT*(row+1)+`FIELD_COL_CNT):
                               (`FIELD_COL_CNT*(row+1)+1) ];
@@ -116,7 +114,6 @@ end
 
 always_comb begin
   full_row_num = 0;
-  integer row;
   for( row = 0; row < `FIELD_ROW_CNT; row++ ) begin
       if( full_row[ row ] ) full_row_num = row;
   end
@@ -125,7 +122,6 @@ end
 always_comb begin
   field_shifted = field_with_color;
   if( |full_row ) begin
-    integer row;
     for( row = 0; row < `FIELD_ROW_CNT; row++ ) begin
       if( row <= full_row_num ) begin
         if( row == 0 ) begin
@@ -145,11 +141,12 @@ always_comb begin
   end
 end
 
+integer i;
+integer j;
+
 always_comb begin
   field_with_cur_block = field_with_color;
   if( cur_block_draw_en ) begin
-    integer i;
-    integer j;
     for( i = 0; i < 4; i++ ) begin
       for( j = 0; j < 4; j++ ) begin
         if( cur_block_data[ (4*4*cur_block_rotation)+4*i+j ] )
@@ -348,8 +345,6 @@ always_ff @( posedge clk or posedge rst ) begin
 end
 
 always_comb begin
-  integer row;
-  integer col;
   for( col = 0; col < `FIELD_COL_CNT; col++ ) begin
     for( row = 0; row < `FIELD_ROW_CNT; row++ ) begin
       gd_field [
@@ -407,7 +402,6 @@ logic [2:0] disappear_lines_cnt;
 
 always_comb begin
   disappear_lines_cnt = 0;
-  integer row;
   for( row = 0; row < `FIELD_ROW_CNT; row++ ) begin
     if( full_row[row] ) disappear_lines_cnt = disappear_lines_cnt + 1'd1;
   end
