@@ -102,8 +102,7 @@ draw_field_helper #(
 logic [NBP_BRICK_CNT*NBP_BRICK_CNT*`TETRIS_COLORS_CNT-1:0] nbp_field;
 logic [4*4-1:0] nbp_block_data;
 
-assign nbp_block_data = gd_next_block_data[ (4*4*(gd_next_block_rotation)+4*4-1):
-                                            (4*4*(gd_next_block_rotation)+0) ];
+assign nbp_block_data = gd_next_block_data[ 4*4*(gd_next_block_rotation) +: 4*4 ];
 
 integer i;
 integer j;
@@ -114,21 +113,12 @@ always_comb begin
           if( ( i == 0 ) || ( j == 0 ) ||
               ( i == ( NBP_BRICK_CNT - 1 ) ) ||
               ( j == ( NBP_BRICK_CNT - 1 ) ) ) begin
-              nbp_field[
-(`TETRIS_COLORS_CNT*NBP_BRICK_CNT*(i)+`TETRIS_COLORS_CNT*(j)+`TETRIS_COLORS_CNT-1):
-(`TETRIS_COLORS_CNT*NBP_BRICK_CNT*(i)+`TETRIS_COLORS_CNT*(j)+0)
-                        ] = 'd0;
+nbp_field[`TETRIS_COLORS_CNT*NBP_BRICK_CNT*(i)+`TETRIS_COLORS_CNT*(j) +: `TETRIS_COLORS_CNT] = 0;
           end else begin
               if( nbp_block_data[4*(i-1)+(j-1)] && gd_next_block_draw_en ) begin
-                nbp_field[
-(`TETRIS_COLORS_CNT*NBP_BRICK_CNT*(i)+`TETRIS_COLORS_CNT*(j)+`TETRIS_COLORS_CNT-1):
-(`TETRIS_COLORS_CNT*NBP_BRICK_CNT*(i)+`TETRIS_COLORS_CNT*(j)+0)
-                        ] = gd_next_block_color;
+nbp_field[`TETRIS_COLORS_CNT*NBP_BRICK_CNT*(i)+`TETRIS_COLORS_CNT*(j) +: `TETRIS_COLORS_CNT] = gd_next_block_color;
               end else begin
-              nbp_field[
-(`TETRIS_COLORS_CNT*NBP_BRICK_CNT*(i)+`TETRIS_COLORS_CNT*(j)+`TETRIS_COLORS_CNT-1):
-(`TETRIS_COLORS_CNT*NBP_BRICK_CNT*(i)+`TETRIS_COLORS_CNT*(j)+0)
-                        ] = 'd0;
+nbp_field[`TETRIS_COLORS_CNT*NBP_BRICK_CNT*(i)+`TETRIS_COLORS_CNT*(j) +: `TETRIS_COLORS_CNT] = 0;
               end
           end
     end
@@ -154,17 +144,13 @@ always_comb begin
   if( main_field_in_field ) begin
       if( main_field_in_brick ) begin
           vga_data = vga_colors_pos[ gd_field[
-(`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(main_field_row_num)+`TETRIS_COLORS_WIDTH*(main_field_col_num)+`TETRIS_COLORS_WIDTH-1):
-(`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(main_field_row_num)+`TETRIS_COLORS_WIDTH*(main_field_col_num)+0)
-                                              ] ];
+`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(main_field_row_num)+`TETRIS_COLORS_WIDTH*(main_field_col_num) +: `TETRIS_COLORS_WIDTH] ];
       end
   end else begin
     if( nbp_field_in_field ) begin
         if( nbp_field_in_brick ) begin
             vga_data = vga_colors_pos[ nbp_field[
-(`TETRIS_COLORS_CNT*NBP_BRICK_CNT*(nbp_field_row_num)+`TETRIS_COLORS_CNT*(nbp_field_col_num)+`TETRIS_COLORS_CNT-1):
-(`TETRIS_COLORS_CNT*NBP_BRICK_CNT*(nbp_field_row_num)+`TETRIS_COLORS_CNT*(nbp_field_col_num)+0)
-                                                ] ];
+`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(main_field_row_num)+`TETRIS_COLORS_WIDTH*(main_field_col_num) +: `TETRIS_COLORS_WIDTH] ];
         end
     end
   end

@@ -122,13 +122,15 @@ always_ff @( posedge clk )
     end
 
 logic [4*4-1:0] check_data;
-always_ff @( posedge clk )
-  begin
-    if( run )
-      check_data <= ( req_move == MOVE_ROTATE ) ?
-            b_data[ (4*4*(b_rotation+1)+4*4-1):(4*4*(b_rotation+1)+0) ]:
-            b_data[ (4*4*(b_rotation)+4*4-1):(4*4*(b_rotation)+0) ];
+always_ff @( posedge clk )begin
+  if( run ) begin
+    if ( req_move == `MOVE_ROTATE ) begin
+      check_data <= b_data[ 4*4*(b_rotation+1) +: 4*4];
+    end else begin
+      check_data <= b_data[ 4*4*(b_rotation) +: 4*4];
+    end
   end
+end
 
 always_ff @( posedge clk )
   if( run )

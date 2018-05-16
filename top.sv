@@ -29,7 +29,7 @@ pll pll(
     .refclk( CLOCK_25 ),
     .rst( 1'b0 ),
     .outclk_0( CLOCK_50 ),
-    .outclk_0( VGA_CLK )
+    .outclk_1( VGA_CLK )
 );
 
 rtl_top rtl_top1(
