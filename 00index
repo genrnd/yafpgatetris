@@ -1,0 +1,17 @@
+ip_cores/  - vga and ps2 keyboarsd sources
+megafunctions/ - pll sources
+string_stuff/  - ROM utilites
+quartus-tetris/  - tetris RTL sources
+
+quartus-tetris.qpf
+quartus-tetris.qsf
+quartus-tetris.sdc  - project variant when Quartus does synthesize all souces
+
+yosys-tetris.qpf
+yosys-tetris.qsf
+yosys-tetris.sdc  - project variant when Yosys does synthesize RTL part, and generated VQM netlist got imported to Quartus
+
+run.sh  - shell script to run Yosys
+rtl_top.sv  - top module of RTL part of the project
+top.sv  - project top module
+run_yosys.ys  - Yosys script
