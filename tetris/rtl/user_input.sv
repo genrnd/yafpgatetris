@@ -70,26 +70,54 @@ always_comb
     endcase
   end
 
-logic fifo_wr_req;
-logic fifo_empty;
-logic fifo_full;
 
-assign fifo_wr_req = wr_event_val && ps2_key_data_en_d1 && ( !fifo_full );
+logic [2:0] event_buf = 0;
+logic event_buf_empty = 1'b1;
+logic [2:0] event_buf_main_logic_clk_d1 = 0;
+logic event_buf_empty_main_logic_clk_d1 = 1'b1;
+logic [2:0] event_buf_main_logic_clk_d2 = 0;
+logic event_buf_empty_main_logic_clk_d2 = 1'b1;
 
-user_input_fifo #(
-  .DWIDTH( 3 )      // width of event vector
-) user_input_fifo1 (
-  .aclr( rst ),
-  .wrclk( ps2_clk ),
-  .wrreq( fifo_wr_req ),
-  .data( wr_event[2:0] ),
-  .rdclk( main_logic_clk_i ),
-  .rdreq( user_event_rd_req_i ),
-  .q( user_event_o[2:0] ),
-  .rdempty( fifo_empty ),
-  .wrfull( fifo_full )
-);
+logic event_done = 1'b1;
+logic event_done_ps2_clk_d1 = 1'b1;
+logic event_done_ps2_clk_d2 = 1'b1;
 
-assign user_event_ready_o = !fifo_empty;
+// synchronizing user events between clock domains
+always_ff @(posedge ps2_clk) begin
+  if( wr_event_val && ps2_key_data_en_d1 && event_buf_empty ) begin
+    event_buf[2:0] <= wr_event[2:0];
+    event_buf_empty <= 1'b0;
+  end else begin
+    if ( event_done_ps2_clk_d2 && !event_done_ps2_clk_d1 ) begin
+      event_buf_empty <= 1'b1;
+    end
+  end
+end
+
+always_ff @(posedge main_logic_clk_i) begin
+  event_buf_main_logic_clk_d1[2:0] <= event_buf[2:0];
+  event_buf_empty_main_logic_clk_d1 <= event_buf_empty;
+  event_buf_main_logic_clk_d2[2:0] <= event_buf_main_logic_clk_d1[2:0];
+  event_buf_empty_main_logic_clk_d2 <= event_buf_empty_main_logic_clk_d1;
+end
+
+always_ff @(posedge main_logic_clk_i) begin
+  if ( user_event_rd_req_i) begin
+    if ( !event_buf_empty_main_logic_clk_d2 ) begin
+      user_event_ready_o <= 1'b1;
+      user_event_o[2:0] <= event_buf_main_logic_clk_d2[2:0];
+      event_done <= 1'b1;
+    end else begin
+      user_event_ready_o <= 1'b0;
+      event_done <= 1'b0;
+    end
+  end
+end
+
+always_ff @(posedge ps2_clk) begin
+  event_done_ps2_clk_d1 <= event_done;
+  event_done_ps2_clk_d2 <= event_done_ps2_clk_d1;
+end
+
 
 endmodule
