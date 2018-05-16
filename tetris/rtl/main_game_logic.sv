@@ -24,7 +24,7 @@ module main_game_logic (
 
 // game field state
 logic [`FIELD_EXT_ROW_CNT*`FIELD_EXT_COL_CNT-1:0] field;
-logic [`FIELD_EXT_ROW_CNT*`FIELD_EXT_COL_CNT*`TETRIS_COLORS_WIDTH-1:0] field_with_color ;
+logic [`FIELD_EXT_ROW_CNT*`FIELD_EXT_COL_CNT*`TETRIS_COLORS_WIDTH-1:0] field_with_color;
 logic [`FIELD_EXT_ROW_CNT*`FIELD_EXT_COL_CNT*`TETRIS_COLORS_WIDTH-1:0] field_clean;
 logic [`FIELD_EXT_ROW_CNT*`FIELD_EXT_COL_CNT*`TETRIS_COLORS_WIDTH-1:0] field_shifted;
 logic [`FIELD_EXT_ROW_CNT*`FIELD_EXT_COL_CNT*`TETRIS_COLORS_WIDTH-1:0] field_with_cur_block;
@@ -68,15 +68,13 @@ integer row;
 integer col;
 
 always_comb begin
-  field_clean = 0;
-  for( row = 0; row < `FIELD_EXT_ROW_CNT; row++ ) begin
-    for( col = 0; col < `FIELD_EXT_COL_CNT; col++ ) begin
+  field_clean <= 0;
+  for( row = 0; row < `FIELD_EXT_ROW_CNT; row = row + 1 ) begin
+    for( col = 0; col < `FIELD_EXT_COL_CNT; col = col + 1 ) begin
       if( ( col == 0 ) || ( col == ( `FIELD_EXT_COL_CNT - 1 ) ) ||
                           ( row == ( `FIELD_EXT_ROW_CNT - 1 ) ) ) begin
-field_clean[
-(`TETRIS_COLORS_WIDTH*`FIELD_EXT_COL_CNT*row+`TETRIS_COLORS_WIDTH*col+`TETRIS_COLORS_WIDTH-1):
-(`TETRIS_COLORS_WIDTH*`FIELD_EXT_COL_CNT*row+`TETRIS_COLORS_WIDTH*col+0)
-          ] = {`TETRIS_COLORS_WIDTH{1'b1}};
+field_clean[ `TETRIS_COLORS_WIDTH*`FIELD_EXT_COL_CNT*row+`TETRIS_COLORS_WIDTH*col +: `TETRIS_COLORS_WIDTH]
+   = {`TETRIS_COLORS_WIDTH{1'b1}};
       end
     end
   end
@@ -95,26 +93,24 @@ always_ff @( posedge clk or posedge rst ) begin
 end
 
 always_comb begin
-  for( row = 0; row < `FIELD_EXT_ROW_CNT; row++ ) begin
-    for( col = 0; col < `FIELD_EXT_COL_CNT; col++ ) begin
-        field[`FIELD_EXT_COL_CNT*row+col] = ( field_with_color[
-(`TETRIS_COLORS_WIDTH*`FIELD_EXT_COL_CNT*row+`TETRIS_COLORS_WIDTH*col+`TETRIS_COLORS_WIDTH-1):
-(`TETRIS_COLORS_WIDTH*`FIELD_EXT_COL_CNT*row+`TETRIS_COLORS_WIDTH*col+0)
-                                                              ] != 0 );
+  for( row = 0; row < `FIELD_EXT_ROW_CNT; row = row + 1 ) begin
+    for( col = 0; col < `FIELD_EXT_COL_CNT; col = col + 1 ) begin
+field[`FIELD_EXT_COL_CNT*row+col] =
+( field_with_color[`TETRIS_COLORS_WIDTH*`FIELD_EXT_COL_CNT*row+`TETRIS_COLORS_WIDTH*col
+                            +: `TETRIS_COLORS_WIDTH] != 0 );
     end
   end
 end
 
 always_comb begin
-  for( row = 0; row < `FIELD_ROW_CNT; row++ ) begin
-    full_row[ row ] = &field[ (`FIELD_COL_CNT*(row+1)+`FIELD_COL_CNT):
-                              (`FIELD_COL_CNT*(row+1)+1) ];
+  for( row = 0; row < `FIELD_ROW_CNT; row = row + 1 ) begin
+    full_row[ row ] = &field[ (row+1)+1 +: (`FIELD_COL_CNT-1)];   // cols 1 through `FIELD_COL_CNT
   end
 end
 
 always_comb begin
   full_row_num = 0;
-  for( row = 0; row < `FIELD_ROW_CNT; row++ ) begin
+  for( row = 0; row < `FIELD_ROW_CNT; row = row + 1 ) begin
       if( full_row[ row ] ) full_row_num = row;
   end
 end
@@ -122,19 +118,16 @@ end
 always_comb begin
   field_shifted = field_with_color;
   if( |full_row ) begin
-    for( row = 0; row < `FIELD_ROW_CNT; row++ ) begin
+    for( row = 0; row < `FIELD_ROW_CNT; row = row + 1 ) begin
       if( row <= full_row_num ) begin
         if( row == 0 ) begin
-          field_shifted[
-(`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(0+1)+`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT+`TETRIS_COLORS_WIDTH-1):
-(`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(0+1)+`TETRIS_COLORS_WIDTH*1+0) ] = 0;
+field_shifted[`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(0+1)+`TETRIS_COLORS_WIDTH*1 +:
+                (`FIELD_COL_CNT-1)*`TETRIS_COLORS_WIDTH] = 0;   // cols 1 through `FIELD_COL_CNT
         end else begin
-          field_shifted[
-(`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(row+1)+`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT+`TETRIS_COLORS_WIDTH-1):
-(`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(row+1)+`TETRIS_COLORS_WIDTH*1+0) ] =
-          field_with_color[
-(`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*row+`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT+`TETRIS_COLORS_WIDTH-1):
-(`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*row+`TETRIS_COLORS_WIDTH*1+0) ];
+field_shifted[`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(row+1)+`TETRIS_COLORS_WIDTH*1 +:
+                (`FIELD_COL_CNT-1)*`TETRIS_COLORS_WIDTH] =
+field_with_color[`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(row)+`TETRIS_COLORS_WIDTH*1 +:
+                (`FIELD_COL_CNT-1)*`TETRIS_COLORS_WIDTH];   // cols 1 through `FIELD_COL_CNT
         end
       end
     end
@@ -147,13 +140,11 @@ integer j;
 always_comb begin
   field_with_cur_block = field_with_color;
   if( cur_block_draw_en ) begin
-    for( i = 0; i < 4; i++ ) begin
-      for( j = 0; j < 4; j++ ) begin
+    for( i = 0; i < 4; i = i + 1 ) begin
+      for( j = 0; j < 4; j = j + 1 ) begin
         if( cur_block_data[ (4*4*cur_block_rotation)+4*i+j ] )
-          field_with_cur_block[
-(`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(cur_block_y+i)+`TETRIS_COLORS_WIDTH*(cur_block_x+j)+`TETRIS_COLORS_WIDTH-1):
-(`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(cur_block_y+i)+`TETRIS_COLORS_WIDTH*(cur_block_x+j)+0)
-                              ] = cur_block_color;
+field_with_cur_block[`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(cur_block_y+i)+`TETRIS_COLORS_WIDTH*(cur_block_x+j) +:
+              `TETRIS_COLORS_WIDTH] = cur_block_color;
       end
     end
   end
@@ -345,14 +336,10 @@ always_ff @( posedge clk or posedge rst ) begin
 end
 
 always_comb begin
-  for( col = 0; col < `FIELD_COL_CNT; col++ ) begin
-    for( row = 0; row < `FIELD_ROW_CNT; row++ ) begin
-      gd_field [
-(`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(row)+`TETRIS_COLORS_WIDTH*(col)+`TETRIS_COLORS_WIDTH-1):
-(`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(row)+`TETRIS_COLORS_WIDTH*(col)+0)
-                ] = field_with_cur_block[
-(`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(row+1)+`TETRIS_COLORS_WIDTH*(col+1)+`TETRIS_COLORS_WIDTH-1):
-(`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(row+1)+`TETRIS_COLORS_WIDTH*(col+1)+0) ];
+  for( col = 0; col < `FIELD_COL_CNT; col = col + 1 ) begin
+    for( row = 0; row < `FIELD_ROW_CNT; row = row + 1 ) begin
+gd_field [`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(row)+`TETRIS_COLORS_WIDTH*(col) +: `TETRIS_COLORS_WIDTH] =
+field_with_cur_block[`TETRIS_COLORS_WIDTH*`FIELD_COL_CNT*(row+1)+`TETRIS_COLORS_WIDTH*(col+1) +: `TETRIS_COLORS_WIDTH];
     end
   end
 end
@@ -402,7 +389,7 @@ logic [2:0] disappear_lines_cnt;
 
 always_comb begin
   disappear_lines_cnt = 0;
-  for( row = 0; row < `FIELD_ROW_CNT; row++ ) begin
+  for( row = 0; row < `FIELD_ROW_CNT; row = row + 1 ) begin
     if( full_row[row] ) disappear_lines_cnt = disappear_lines_cnt + 1'd1;
   end
 end
@@ -411,7 +398,7 @@ logic stat_srst;
 assign stat_srst = ( state == `STATE_NEW_GAME ) && ( next_state != `STATE_NEW_GAME );
 
 logic level_changed;
-tetris_stat stat1(
+tetris_stat tetris_stat1(
     .clk( clk ),
     .srst( stat_srst ),   // sync reset - when starts new game
     .disappear_lines_cnt_i( disappear_lines_cnt ),
