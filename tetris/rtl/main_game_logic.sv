@@ -61,8 +61,8 @@ logic [$clog2(`FIELD_ROW_CNT)-1:0] full_row_num;
 
 logic check_lines_first_tick;
 
-integer state;
-integer next_state;
+logic [5:0] state;
+logic [5:0] next_state;
 
 integer row;
 integer col;
