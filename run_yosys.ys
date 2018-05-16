@@ -19,7 +19,5 @@ read_verilog ip_cores/ps2_keyboard/PS2_Controller.v
 read_verilog ip_cores/ps2_keyboard/Altera_UP_PS2_Data_In.v
 read_verilog ip_cores/vga/vga_time_generator.v
 read_verilog tetris/rtl/string_rom.v
-read_verilog tetris/rtl/head.mif
-read_verilog tetris/rtl/font.mif
-read_verilog tetris/rtl/game_over.mif
-synth_intel -family cyclonev -top rtl_top -vqm rtl_top.vqm
+
+synth_intel -noiopads -family cyclonev -top rtl_top -vqm rtl_top.vqm
