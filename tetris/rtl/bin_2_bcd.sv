@@ -12,12 +12,12 @@ integer bcd;
 
 always_comb begin
   bcd_o = 0;
-  for( b = BIN_WIDTH - 1; b >= 0; b-- ) begin
-      for( bcd = 0; bcd < BCD_WIDTH; bcd++ ) begin
+  for( b = BIN_WIDTH - 1; b >= 0; b = b - 1 ) begin
+      for( bcd = 0; bcd < BCD_WIDTH; bcd = bcd + 1 ) begin
           if( bcd_o[ (bcd*4+3):(bcd*4+0) ] >= 4'd5 )
               bcd_o[ (bcd*4+3):(bcd*4+0) ] = bcd_o[ (bcd*4+3):(bcd*4+0) ] + 4'd3;
       end
-      for( bcd = BCD_WIDTH - 1; bcd >= 0; bcd-- ) begin
+      for( bcd = BCD_WIDTH - 1; bcd >= 0; bcd = bcd - 1 ) begin
           bcd_o[(bcd*4+3):(bcd*4+0) ] = bcd_o[ (bcd*4+3):(bcd*4+0) ] << 1;
           if( bcd == 0 )
             bcd_o[ bcd*4+0 ] = bin_i[ b ];

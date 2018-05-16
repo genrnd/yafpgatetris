@@ -1,7 +1,7 @@
 
 module tetris_stat(
   input  clk,
-  input srst_i,    // sync reset - when starts new game
+  input srst,    // sync reset - when starts new game
   input [2:0] disappear_lines_cnt_i,
   input update_stat_en_i,
   output [6*4-1:0] score_o,
@@ -38,7 +38,7 @@ always_comb begin
 end
 
 always_ff @( posedge clk ) begin
-  if( srst_i )
+  if( srst )
     score_hundred <= 'd0;
   else
     if( update_stat_en_i )
@@ -74,7 +74,7 @@ always_comb begin
 end
 
 always_ff @( posedge clk ) begin
-  if( srst_i )
+  if( srst )
     lines_cnt <= 0;
   else
     if( update_stat_en_i )
@@ -118,7 +118,7 @@ end
 logic [3:0] level_num_0_d1;
 
 always_ff @( posedge clk ) begin
-  if( srst_i )
+  if( srst )
     level_num_0_d1 <= 0;
   else
     level_num_0_d1 <= level_num[3:0];

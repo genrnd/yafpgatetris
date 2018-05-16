@@ -1,7 +1,7 @@
 
 module gen_sys_event(
   input clk,
-  input srst_i,
+  input srst,
   input level_changed_i,
   output sys_event_o
 );
@@ -11,7 +11,7 @@ localparam SYS_EVENT_PERIOD_MAX  = 'd67_000_000;
 localparam SYS_EVENT_PERIOD_MIN  = 'd10_000_000;
 localparam SYS_EVENT_PERIOD_STEP = 'd4_000_000;
 
-logic [31:0] sys_counter = '0;
+logic [31:0] sys_counter = 0;
 logic [31:0] sys_event_period = SYS_EVENT_PERIOD_MAX;
 logic [31:0] next_sys_event_period;
 
@@ -25,15 +25,15 @@ always_comb begin
 end
 
 always_ff @( posedge clk ) begin
-  if( srst_i )
+  if( srst )
       sys_event_period <= SYS_EVENT_PERIOD_MAX;
   else
       if( level_changed_i ) sys_event_period <= next_sys_event_period;
 end
 
 always_ff @( posedge clk ) begin
-  if( srst_i || level_changed_i || counter_eq_period )
-      sys_counter <= 'd0;
+  if( srst || level_changed_i || counter_eq_period )
+      sys_counter <= 0;
   else
       sys_counter <= sys_counter + 1'd1;
 end

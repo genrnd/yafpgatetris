@@ -35,14 +35,14 @@ logic [PIX_WIDTH-1:0] row_pix_end [BRICK_Y_CNT-1:0];
 integer i;
 
 always_comb begin
-  for( i = 0; i < BRICK_X_CNT; i++ ) begin
+  for( i = 0; i < BRICK_X_CNT; i = i + 1 ) begin
     col_pix_start[i] = ( i + 1 ) * BORDER_X + i * BRICK_X;
     col_pix_end[i] = col_pix_start[i] + BRICK_X - 1'd1;
   end
 end
 
 always_comb begin
-  for( i = 0 ; i < BRICK_Y_CNT; i++ ) begin
+  for( i = 0 ; i < BRICK_Y_CNT; i = i + 1 ) begin
     row_pix_start[i] = ( i + 1 ) * BORDER_Y + i * BRICK_Y;
     row_pix_end[i] = row_pix_start[i] + BRICK_Y - 1'd1;
   end
@@ -66,7 +66,7 @@ assign in_field_pix_y = pix_y_i - start_y_i;
 always_comb begin
   brick_col_num = 0;
   in_brick_col  = 1'b0;
-  for( i = 0; i < BRICK_X_CNT; i++ ) begin
+  for( i = 0; i < BRICK_X_CNT; i = i + 1 ) begin
     if( ( in_field_pix_x >= col_pix_start[i] ) &&
         ( in_field_pix_x <= col_pix_end[i] ) ) begin
             brick_col_num = i;
@@ -78,7 +78,7 @@ end
 always_comb begin
   brick_row_num = 0;
   in_brick_row  = 1'b0;
-  for( i = 0; i < BRICK_Y_CNT; i++ ) begin
+  for( i = 0; i < BRICK_Y_CNT; i = i + 1 ) begin
     if( ( in_field_pix_y >= row_pix_start[i] ) &&
         ( in_field_pix_y <= row_pix_end[i] ) ) begin
             brick_row_num = i;

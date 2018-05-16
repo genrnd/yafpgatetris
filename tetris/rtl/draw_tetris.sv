@@ -43,7 +43,7 @@ logic [PIX_WIDTH-1:0] pix_y;
 
 logic [23:0] vga_data;
 
-draw_strings #(
+/*draw_strings #(
    .PIX_WIDTH( PIX_WIDTH )
 ) draw_strings1 (
 
@@ -59,7 +59,7 @@ draw_strings #(
 
     .vga_data_o ( strings_vga_data_w ),
     .vga_data_en_o ( strings_vga_data_en_w )
-);
+);*/
 
 draw_field #(
     .PIX_WIDTH( PIX_WIDTH )

@@ -35,8 +35,8 @@ logic [2:0] user_event;
 logic user_event_ready;
 
 user_input user_input1(
-    .rst_i ( ~NRST ),
-    .ps2_clk_i ( CLOCK_50 ),
+    .rst ( ~NRST ),
+    .ps2_clk ( CLOCK_50 ),
     .ps2_key_data_i ( ps2_received_data ),
     .ps2_key_data_en_i ( ps2_received_data_en ),
     .main_logic_clk_i ( VGA_CLK ),

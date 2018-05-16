@@ -109,8 +109,8 @@ integer i;
 integer j;
 
 always_comb begin
-  for( i = 0; i < NBP_BRICK_CNT; i++ ) begin
-    for( j = 0; j < NBP_BRICK_CNT; j++ ) begin
+  for( i = 0; i < NBP_BRICK_CNT; i = i + 1 ) begin
+    for( j = 0; j < NBP_BRICK_CNT; j = j + 1 ) begin
           if( ( i == 0 ) || ( j == 0 ) ||
               ( i == ( NBP_BRICK_CNT - 1 ) ) ||
               ( j == ( NBP_BRICK_CNT - 1 ) ) ) begin

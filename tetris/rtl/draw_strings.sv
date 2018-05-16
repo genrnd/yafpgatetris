@@ -58,32 +58,32 @@ integer s;
 integer i;
 
 always_comb begin
-  for( s = 0; s < STRING_CNT; s++ ) begin
-    for( i = 0; i < STRING_LEN; i++ ) begin
+  for( s = 0; s < STRING_CNT; s = s + 1 ) begin
+    for( i = 0; i < STRING_LEN; i = i + 1 ) begin
       strings[s][i] = 7'h20; // "stuffing" by spaces
     end
   end
 
-  for( i = 0; i < 6; i++ ) begin
+  for( i = 0; i < 6; i = i + 1 ) begin
     strings[0][i] = string_score[i];
     strings[1][i] = string_lines[i];
     strings[2][i] = string_level[i];
   end
 
-  for( s = 0; s < NUMBER_STRING_CNT; s++ ) begin
-    for( i = 0; i < NUMBER_LEN; i++ ) begin
+  for( s = 0; s < NUMBER_STRING_CNT; s = s + 1 ) begin
+    for( i = 0; i < NUMBER_LEN; i = i + 1 ) begin
       strings[s][ 6 + i ] = number_strings[s][NUMBER_LEN-1-i];
     end
   end
 
-  for( i = 0; i < ( $bits( string_new_game ) / SYMBOL_WIDTH ); i++ ) begin
+  for( i = 0; i < ( $bits( string_new_game ) / SYMBOL_WIDTH ); i = i + 1 ) begin
     strings[3][i] = string_new_game[i];
   end
 end
 
 // TODO: 00005 -> 5
 always_comb begin
-  for( i = 0; i < NUMBER_LEN; i++ ) begin // adding '0' to get ascii code
+  for( i = 0; i < NUMBER_LEN; i = i + 1 ) begin // adding '0' to get ascii code
     number_strings[0][i] = gd_score[i] + 7'h30;
     number_strings[1][i] = gd_lines[i] + 7'h30;
     number_strings[2][i] = gd_level[i] + 7'h30;
@@ -142,7 +142,7 @@ string_rom #(
 
 // mirroring data because drawing order is left-to-right, but opposite in memory
 always_comb begin
-  for( i = 0; i < FONT_ROM_DATA_WIDTH; i++ ) begin
+  for( i = 0; i < FONT_ROM_DATA_WIDTH; i = i + 1 ) begin
     rom_rd_data_rev[i] = rom_rd_data[FONT_ROM_DATA_WIDTH-1-i];
   end
 end
